@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import {
   View,
@@ -12,9 +13,10 @@ import {
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { messageService } from '@/services/messageService';
 import { useAuth, useAlert } from '@/template';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function SendMessageScreen() {
   const insets = useSafeAreaInsets();
@@ -22,6 +24,7 @@ export default function SendMessageScreen() {
   const { userId, username } = useLocalSearchParams<{ userId: string; username: string }>();
   const { user } = useAuth();
   const { showAlert } = useAlert();
+  const { colors } = useTheme();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -45,51 +48,56 @@ export default function SendMessageScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <Stack.Screen
         options={{
-          title: `${username || 'Foydalanuvchi'}ga xabar`,
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#FFFFFF',
+          headerTitle: username ? `Send message to ${username}` : 'Send message',
+          headerBackTitleVisible: false,
+          headerTintColor: colors.text,
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
         }}
       />
-      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-        <View style={styles.content}>
-          <View style={styles.userInfo}>
-            <MaterialIcons name="person" size={48} color={colors.primary} />
-            <Text style={styles.username}>{username || 'Foydalanuvchi'}</Text>
-          </View>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Xabaringizni yozing..."
-            placeholderTextColor={colors.textSecondary}
-            value={message}
-            onChangeText={setMessage}
-            multiline
-            maxLength={500}
-            autoFocus
-          />
-
-          <Text style={styles.charCount}>{message.length}/500</Text>
-
-          <TouchableOpacity
-            style={[styles.sendButton, (!message.trim() || sending) && styles.sendButtonDisabled]}
-            onPress={handleSend}
-            disabled={!message.trim() || sending}
-          >
-            {sending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <>
-                <MaterialIcons name="send" size={20} color="#FFFFFF" />
-                <Text style={styles.sendButtonText}>Xabar yuborish</Text>
-              </>
-            )}
-          </TouchableOpacity>
+      <View style={styles.content}>
+        <View style={styles.userInfo}>
+          <MaterialIcons name="person" size={64} color={colors.primary} />
+          <Text style={styles.username}>{username}</Text>
         </View>
+
+        <TextInput
+          style={[styles.input, { borderColor: colors.border }]}
+          placeholder="Type your message here..."
+          placeholderTextColor={colors.textSecondary}
+          multiline
+          value={message}
+          onChangeText={setMessage}
+          maxLength={500}
+          editable={!sending}
+        />
+        <Text style={styles.charCount}>{message.length}/500</Text>
+
+        <TouchableOpacity
+          style={[
+            styles.sendButton,
+            (!message.trim() || sending) && styles.sendButtonDisabled,
+            { backgroundColor: colors.primary },
+          ]}
+          onPress={handleSend}
+          disabled={!message.trim() || sending}
+        >
+          {sending ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <>
+              <MaterialIcons name="send" size={24} color="#FFFFFF" />
+              <Text style={styles.sendButtonText}>Send Message</Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
