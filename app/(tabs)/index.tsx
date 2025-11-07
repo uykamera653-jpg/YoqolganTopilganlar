@@ -17,7 +17,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const supabase = getSupabaseClient();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { colors } = useTheme();
 
   useEffect(() => {

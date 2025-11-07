@@ -2,9 +2,11 @@ import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Post } from '@/types';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { spacing, typography, borderRadius, shadows, staticColors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/template';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PostCardProps {
   post: Post;
@@ -13,6 +15,8 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const handleUserPress = (e: any) => {
     e.stopPropagation();
@@ -28,15 +32,15 @@ export function PostCard({ post }: PostCardProps) {
     if (user.id === post.user_id) {
       return; // Don't allow sending message to self
     }
-    router.push(`/send-message?userId=${post.user_id}&username=${post.user_profiles?.username || 'Foydalanuvchi'}`);
+    router.push(`/send-message?userId=${post.user_id}&username=${post.user_profiles?.username || t.profile.username}`);
   };
 
   const getTypeColor = () => {
-    return post.type === 'found' ? colors.found : colors.lost;
+    return post.type === 'found' ? staticColors.found : staticColors.lost;
   };
 
   const getTypeLabel = () => {
-    return post.type === 'found' ? 'Topilgan' : 'Yo\'qotilgan';
+    return post.type === 'found' ? t.postTypes.found : t.postTypes.lost;
   };
 
   const formatDate = (dateString: string) => {
@@ -46,7 +50,7 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.surface }]}
       onPress={() => router.push(`/post-detail?id=${post.id}`)}
       activeOpacity={0.7}
     >
@@ -67,11 +71,11 @@ export function PostCard({ post }: PostCardProps) {
               contentFit="cover"
             />
           ) : (
-            <View style={styles.userAvatar}>
+            <View style={[styles.userAvatar, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}>
               <MaterialIcons name="person" size={20} color={colors.primary} />
             </View>
           )}
-          <Text style={styles.username}>{post.user_profiles?.username || 'Foydalanuvchi'}</Text>
+          <Text style={[styles.username, { color: colors.text }]}>{post.user_profiles?.username || t.profile.username}</Text>
         </TouchableOpacity>
         <View style={styles.header}>
           <View style={[styles.badge, { backgroundColor: getTypeColor() + '20' }]}>
@@ -80,29 +84,29 @@ export function PostCard({ post }: PostCardProps) {
             </Text>
           </View>
           {post.reward && (
-            <View style={[styles.badge, { backgroundColor: colors.reward + '20' }]}>
-              <MaterialIcons name="star" size={14} color={colors.reward} />
-              <Text style={[styles.badgeText, { color: colors.reward, marginLeft: spacing.xs }]}>
-                Mukofotli
+            <View style={[styles.badge, { backgroundColor: staticColors.reward + '20' }]}>
+              <MaterialIcons name="star" size={14} color={staticColors.reward} />
+              <Text style={[styles.badgeText, { color: staticColors.reward, marginLeft: spacing.xs }]}>
+                {t.home.reward}
               </Text>
             </View>
           )}
         </View>
 
-        <Text style={styles.title} numberOfLines={2}>{post.title}</Text>
-        <Text style={styles.description} numberOfLines={2}>{post.description}</Text>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>{post.title}</Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>{post.description}</Text>
 
         <View style={styles.footer}>
           <View style={styles.locationRow}>
             <MaterialIcons name="location-on" size={16} color={colors.textSecondary} />
-            <Text style={styles.location} numberOfLines={1}>{post.location}</Text>
+            <Text style={[styles.location, { color: colors.textSecondary }]} numberOfLines={1}>{post.location}</Text>
           </View>
           <View style={styles.footerRight}>
-            <Text style={styles.date}>{formatDate(post.created_at)}</Text>
+            <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(post.created_at)}</Text>
             {user && user.id !== post.user_id && (
-              <TouchableOpacity style={styles.messageButton} onPress={handleMessagePress}>
-                <MaterialIcons name="chat" size={16} color={colors.white} />
-                <Text style={styles.messageButtonText}>Xabar</Text>
+              <TouchableOpacity style={[styles.messageButton, { backgroundColor: colors.primary }]} onPress={handleMessagePress}>
+                <MaterialIcons name="chat" size={16} color={staticColors.white} />
+                <Text style={[styles.messageButtonText, { color: staticColors.white }]}>{t.messages.title}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -114,7 +118,6 @@ export function PostCard({ post }: PostCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
@@ -130,23 +133,19 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.sm,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: colors.primary + '40',
   },
   username: {
     fontSize: typography.sm,
     fontWeight: typography.semibold,
-    color: colors.text,
   },
   image: {
     width: '100%',
     height: 200,
-    backgroundColor: colors.surfaceSecondary,
   },
   content: {
     padding: spacing.md,
@@ -171,12 +170,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.lg,
     fontWeight: typography.semibold,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   description: {
     fontSize: typography.sm,
-    color: colors.textSecondary,
     marginBottom: spacing.md,
     lineHeight: 20,
   },
@@ -193,7 +190,6 @@ const styles = StyleSheet.create({
   messageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
@@ -202,7 +198,6 @@ const styles = StyleSheet.create({
   messageButtonText: {
     fontSize: typography.xs,
     fontWeight: typography.semibold,
-    color: colors.white,
   },
   locationRow: {
     flexDirection: 'row',
@@ -212,12 +207,10 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: typography.sm,
-    color: colors.textSecondary,
     marginLeft: spacing.xs,
     flex: 1,
   },
   date: {
     fontSize: typography.sm,
-    color: colors.textTertiary,
   },
 });

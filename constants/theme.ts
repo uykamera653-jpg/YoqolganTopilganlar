@@ -1,23 +1,11 @@
-import { Appearance } from 'react-native';
+// This file contains only static design tokens
+// For dynamic theming, use ThemeContext
 
-const colorScheme = Appearance.getColorScheme();
-const isDark = colorScheme === 'dark';
-
-export const colors = {
+export const staticColors = {
   // Primary colors
   primary: '#6366F1',
   primaryDark: '#4F46E5',
   primaryLight: '#818CF8',
-  
-  // Background colors
-  background: isDark ? '#0F172A' : '#F8FAFC',
-  surface: isDark ? '#1E293B' : '#FFFFFF',
-  surfaceSecondary: isDark ? '#334155' : '#F1F5F9',
-  
-  // Text colors
-  text: isDark ? '#F1F5F9' : '#1E293B',
-  textSecondary: isDark ? '#94A3B8' : '#64748B',
-  textTertiary: isDark ? '#64748B' : '#94A3B8',
   
   // Status colors
   success: '#10B981',
@@ -29,10 +17,6 @@ export const colors = {
   found: '#10B981',
   lost: '#EF4444',
   reward: '#F59E0B',
-  
-  // Border colors
-  border: isDark ? '#334155' : '#E2E8F0',
-  borderLight: isDark ? '#475569' : '#CBD5E1',
   
   // Other
   white: '#FFFFFF',
