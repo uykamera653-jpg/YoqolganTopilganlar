@@ -3,25 +3,29 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/template';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function MessagesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
   const { conversations, unreadCount, loading } = useMessages();
+  const { t } = useLanguage();
+  const { colors } = useTheme();
 
   if (!user) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Xabarlar</Text>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{t.messages.title}</Text>
         </View>
         <View style={styles.emptyContainer}>
           <MaterialIcons name="login" size={64} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>Xabarlar uchun tizimga kiring</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t.auth.login}</Text>
         </View>
       </View>
     );
@@ -35,20 +39,20 @@ export default function MessagesScreen() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Hozir';
-    if (diffMins < 60) return `${diffMins} daqiqa oldin`;
-    if (diffHours < 24) return `${diffHours} soat oldin`;
-    if (diffDays === 1) return 'Kecha';
-    if (diffDays < 7) return `${diffDays} kun oldin`;
-    return date.toLocaleDateString('uz-UZ');
+    if (diffMins < 1) return t.messages.justNow || 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hr ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Xabarlar</Text>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t.messages.title}</Text>
         {unreadCount > 0 && (
-          <View style={styles.badge}>
+          <View style={[styles.badge, { backgroundColor: colors.error }]}>
             <Text style={styles.badgeText}>{unreadCount}</Text>
           </View>
         )}
@@ -61,8 +65,8 @@ export default function MessagesScreen() {
       ) : conversations.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialIcons name="chat-bubble-outline" size={64} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>Hali xabarlar yo'q</Text>
-          <Text style={styles.emptySubtext}>E'lon sahifasida "Xabar yuborish" tugmasini bosing</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t.messages.noMessages}</Text>
+          <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>{t.messages.startConversation}</Text>
         </View>
       ) : (
         <FlatList
@@ -70,31 +74,31 @@ export default function MessagesScreen() {
           keyExtractor={(item) => item.user_id}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.conversationItem}
+              style={[styles.conversationItem, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
               onPress={() => router.push(`/chat?userId=${item.user_id}&username=${item.username}`)}
             >
               {item.avatar_url ? (
                 <Image
                   source={{ uri: item.avatar_url }}
-                  style={styles.avatarImage}
+                  style={[styles.avatarImage, { borderColor: colors.primary + '40' }]}
                   contentFit="cover"
                 />
               ) : (
-                <View style={styles.avatarContainer}>
+                <View style={[styles.avatarContainer, { backgroundColor: colors.primary + '20' }]}>
                   <MaterialIcons name="person" size={32} color={colors.primary} />
                 </View>
               )}
               <View style={styles.conversationContent}>
                 <View style={styles.conversationHeader}>
-                  <Text style={styles.conversationUsername}>{item.username}</Text>
-                  <Text style={styles.conversationTime}>{formatTime(item.last_message_time)}</Text>
+                  <Text style={[styles.conversationUsername, { color: colors.text }]}>{item.username}</Text>
+                  <Text style={[styles.conversationTime, { color: colors.textSecondary }]}>{formatTime(item.last_message_time)}</Text>
                 </View>
-                <Text style={styles.conversationMessage} numberOfLines={1}>
+                <Text style={[styles.conversationMessage, { color: colors.textSecondary }]} numberOfLines={1}>
                   {item.last_message}
                 </Text>
               </View>
               {item.unread_count > 0 && (
-                <View style={styles.unreadBadge}>
+                <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}>
                   <Text style={styles.unreadBadgeText}>{item.unread_count}</Text>
                 </View>
               )}
@@ -110,7 +114,6 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -118,17 +121,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.text,
   },
   badge: {
-    backgroundColor: colors.error,
     borderRadius: 12,
     minWidth: 24,
     height: 24,
@@ -155,13 +154,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textSecondary,
     marginTop: spacing.md,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: colors.textSecondary,
     marginTop: spacing.sm,
     textAlign: 'center',
   },
@@ -173,15 +170,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   avatarContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.primary + '20',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -192,7 +186,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginRight: spacing.md,
     borderWidth: 2,
-    borderColor: colors.primary + '40',
   },
   conversationContent: {
     flex: 1,
@@ -206,18 +199,14 @@ const styles = StyleSheet.create({
   conversationUsername: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
   },
   conversationTime: {
     fontSize: 12,
-    color: colors.textSecondary,
   },
   conversationMessage: {
     fontSize: 14,
-    color: colors.textSecondary,
   },
   unreadBadge: {
-    backgroundColor: colors.primary,
     borderRadius: 10,
     minWidth: 20,
     height: 20,

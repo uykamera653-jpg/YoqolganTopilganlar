@@ -1,11 +1,14 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/constants/theme';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
+  const { colors } = useTheme();
 
   return (
     <Tabs
@@ -39,7 +42,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Bosh sahifa',
+          title: t.tabs.home,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
@@ -48,7 +51,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="messages"
         options={{
-          title: 'Xabarlar',
+          title: t.tabs.messages,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="chat" size={size} color={color} />
           ),
@@ -57,7 +60,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="add"
         options={{
-          title: 'E\'lon berish',
+          title: t.tabs.addPost,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="add-circle" size={size} color={color} />
           ),
@@ -66,7 +69,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profil',
+          title: t.tabs.profile,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),

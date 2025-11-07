@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { CategoryButton } from '@/components';
 import { useAuth, getSupabaseClient } from '@/template';
 import { useRouter } from 'expo-router';
 import { UserProfile } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -15,6 +17,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const supabase = getSupabaseClient();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { t } = useLanguage();
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (user) {
@@ -39,11 +43,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>FINDO</Text>
-          <Text style={styles.subtitle}>Yo'qotdingizmi? Topdingizmi? E'lon qoldiring!</Text>
+          <Text style={styles.greeting}>{t.appName}</Text>
+          <Text style={styles.subtitle}>{t.appTagline}</Text>
         </View>
         {user && userProfile ? (
           <TouchableOpacity
@@ -59,18 +63,18 @@ export default function HomeScreen() {
                 key={userProfile.avatar_url}
               />
             ) : (
-              <View style={styles.headerAvatar}>
+              <View style={[styles.headerAvatar, { backgroundColor: colors.white }]}>
                 <MaterialIcons name="person" size={24} color={colors.primary} />
               </View>
             )}
-            <Text style={styles.headerUsername} numberOfLines={1}>{userProfile.username || 'Foydalanuvchi'}</Text>
+            <Text style={styles.headerUsername} numberOfLines={1}>{userProfile.username || t.profile.username}</Text>
           </TouchableOpacity>
         ) : user ? null : (
           <TouchableOpacity
-            style={styles.loginButton}
+            style={[styles.loginButton, { backgroundColor: colors.white }]}
             onPress={() => router.push('/login')}
           >
-            <Text style={styles.loginButtonText}>Kirish</Text>
+            <Text style={[styles.loginButtonText, { color: colors.primary }]}>{t.auth.login}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -80,23 +84,23 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
-        <View style={styles.mottoContainer}>
+        <View style={[styles.mottoContainer, { backgroundColor: colors.surface }]}>
           <MaterialIcons name="verified" size={32} color={colors.primary} />
-          <Text style={styles.mottoText}>Halollik - eng katta mukofot</Text>
+          <Text style={[styles.mottoText, { color: colors.text }]}>{t.home.featured}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Asosiy bo'limlar</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.home.categories}</Text>
         
         <View style={styles.categoriesRow}>
           <CategoryButton
             icon="search"
-            label="Topdim"
+            label={t.home.found}
             color={colors.found}
             onPress={() => router.push('/posts-list?filter=found')}
           />
           <CategoryButton
             icon="warning"
-            label="Yo'qotdim"
+            label={t.home.lost}
             color={colors.lost}
             onPress={() => router.push('/posts-list?filter=lost')}
           />
@@ -105,25 +109,16 @@ export default function HomeScreen() {
         <View style={styles.categoriesRow}>
           <CategoryButton
             icon="star"
-            label="Mukofotli"
+            label={t.home.reward}
             color={colors.reward}
             onPress={() => router.push('/posts-list?filter=reward')}
           />
           <CategoryButton
             icon="list"
-            label="Barchasi"
+            label={t.home.all}
             color={colors.primary}
             onPress={() => router.push('/posts-list?filter=all')}
           />
-        </View>
-
-        <View style={styles.adSection}>
-          <Text style={styles.adTitle}>Reklama</Text>
-          <View style={styles.adPlaceholder}>
-            <MaterialIcons name="play-circle-outline" size={48} color={colors.textSecondary} />
-            <Text style={styles.adText}>Reklama joyi</Text>
-            <Text style={styles.adSubtext}>Video yoki rasm joylash mumkin</Text>
-          </View>
         </View>
       </ScrollView>
     </View>
@@ -133,7 +128,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -141,7 +135,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    backgroundColor: colors.primary,
   },
   headerLeft: {
     flex: 1,
@@ -149,22 +142,20 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: typography.xxl,
     fontWeight: typography.bold,
-    color: colors.white,
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: typography.sm,
-    color: colors.white,
+    color: '#FFFFFF',
     opacity: 0.9,
     marginTop: spacing.xs,
   },
   loginButton: {
-    backgroundColor: colors.white,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.md,
   },
   loginButtonText: {
-    color: colors.primary,
     fontSize: typography.base,
     fontWeight: typography.semibold,
   },
@@ -178,17 +169,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: colors.white + '50',
+    borderColor: '#FFFFFF50',
   },
   headerUsername: {
     fontSize: typography.sm,
     fontWeight: typography.semibold,
-    color: colors.white,
+    color: '#FFFFFF',
     flex: 1,
   },
   content: {
@@ -197,7 +187,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.xl,
     fontWeight: typography.bold,
-    color: colors.text,
     marginHorizontal: spacing.md,
     marginTop: spacing.lg,
     marginBottom: spacing.md,
@@ -206,7 +195,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
@@ -218,45 +206,11 @@ const styles = StyleSheet.create({
   mottoText: {
     fontSize: typography.lg,
     fontWeight: typography.bold,
-    color: colors.text,
     marginLeft: spacing.sm,
   },
   categoriesRow: {
     flexDirection: 'row',
     paddingHorizontal: spacing.sm,
     marginBottom: spacing.sm,
-  },
-
-  adSection: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.lg,
-  },
-  adTitle: {
-    fontSize: typography.lg,
-    fontWeight: typography.semibold,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  adPlaceholder: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-    minHeight: 200,
-    justifyContent: 'center',
-  },
-  adText: {
-    fontSize: typography.base,
-    fontWeight: typography.medium,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-  },
-  adSubtext: {
-    fontSize: typography.sm,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
   },
 });

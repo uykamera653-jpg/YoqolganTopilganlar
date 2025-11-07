@@ -4,11 +4,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
+import { spacing, typography, borderRadius } from '@/constants/theme';
 import { usePosts } from '@/hooks/usePosts';
 import { useAuth, useAlert } from '@/template';
 import { PostFormData } from '@/types';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AddPostScreen() {
   const insets = useSafeAreaInsets();
@@ -16,6 +18,8 @@ export default function AddPostScreen() {
   const { createPost } = usePosts();
   const { showAlert } = useAlert();
   const router = useRouter();
+  const { t } = useLanguage();
+  const { colors } = useTheme();
 
   const [type, setType] = useState<'found' | 'lost'>('found');
   const [title, setTitle] = useState('');
@@ -30,7 +34,7 @@ export default function AddPostScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showAlert('Ruxsat kerak', 'Iltimos, galereya uchun ruxsat bering');
+      showAlert(t.error, t.errors.uploadError);
       return;
     }
 
@@ -49,15 +53,15 @@ export default function AddPostScreen() {
 
   const handleSubmit = async () => {
     if (!user) {
-      showAlert('Kirish kerak', 'E\'lon berish uchun tizimga kiring', [
-        { text: 'Bekor qilish', style: 'cancel' },
-        { text: 'Kirish', onPress: () => router.push('/login') },
+      showAlert(t.error, t.auth.login, [
+        { text: t.cancel, style: 'cancel' },
+        { text: t.auth.login, onPress: () => router.push('/login') },
       ]);
       return;
     }
 
     if (!title.trim() || !description.trim() || !location.trim() || !contact.trim()) {
-      showAlert('Xato', 'Iltimos, barcha maydonlarni to\'ldiring');
+      showAlert(t.error, t.errors.fillAllFields);
       return;
     }
 
@@ -79,7 +83,7 @@ export default function AddPostScreen() {
     setLoading(false);
 
     if (success) {
-      showAlert('Muvaffaqiyatli!', 'E\'lon muvaffaqiyatli yaratildi');
+      showAlert(t.success, t.postForm.submit);
       setTitle('');
       setDescription('');
       setLocation('');
@@ -89,7 +93,7 @@ export default function AddPostScreen() {
       setImageUri(null);
       router.push('/(tabs)');
     } else {
-      showAlert('Xato', error || 'E\'lon yaratishda xatolik');
+      showAlert(t.error, error || t.errors.generic);
     }
   };
 
@@ -98,9 +102,9 @@ export default function AddPostScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>E'lon berish</Text>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+          <Text style={styles.headerTitle}>{t.postForm.title}</Text>
         </View>
 
         <ScrollView
@@ -108,120 +112,120 @@ export default function AddPostScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: spacing.xl }}
         >
-          <Text style={styles.label}>E'lon turi</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.type}</Text>
           <View style={styles.typeSelector}>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'found' && styles.typeButtonActive]}
+              style={[styles.typeButton, { backgroundColor: colors.surface, borderColor: colors.border }, type === 'found' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
               onPress={() => setType('found')}
             >
               <MaterialIcons
                 name="search"
                 size={24}
-                color={type === 'found' ? colors.white : colors.found}
+                color={type === 'found' ? '#FFFFFF' : colors.found}
               />
-              <Text style={[styles.typeButtonText, type === 'found' && styles.typeButtonTextActive]}>
-                Topdim
+              <Text style={[styles.typeButtonText, { color: colors.text }, type === 'found' && { color: '#FFFFFF' }]}>
+                {t.postTypes.found}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'lost' && styles.typeButtonActive]}
+              style={[styles.typeButton, { backgroundColor: colors.surface, borderColor: colors.border }, type === 'lost' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
               onPress={() => setType('lost')}
             >
               <MaterialIcons
                 name="warning"
                 size={24}
-                color={type === 'lost' ? colors.white : colors.lost}
+                color={type === 'lost' ? '#FFFFFF' : colors.lost}
               />
-              <Text style={[styles.typeButtonText, type === 'lost' && styles.typeButtonTextActive]}>
-                Yo'qotdim
+              <Text style={[styles.typeButtonText, { color: colors.text }, type === 'lost' && { color: '#FFFFFF' }]}>
+                {t.postTypes.lost}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>Rasm yuklash</Text>
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.uploadImage}</Text>
+          <TouchableOpacity style={[styles.imagePicker, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={pickImage}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.imagePreview} contentFit="cover" />
             ) : (
               <>
                 <MaterialIcons name="add-photo-alternate" size={48} color={colors.textSecondary} />
-                <Text style={styles.imagePickerText}>Rasm tanlang</Text>
+                <Text style={[styles.imagePickerText, { color: colors.textSecondary }]}>{t.postForm.uploadImage}</Text>
               </>
             )}
           </TouchableOpacity>
 
-          <Text style={styles.label}>Nima {type === 'found' ? 'topdingiz' : 'yo\'qotdingiz'}? *</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.itemTitle} *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={title}
             onChangeText={setTitle}
-            placeholder="Masalan: Ko'k rangli sumka"
+            placeholder={t.postForm.itemTitlePlaceholder}
             placeholderTextColor={colors.textSecondary}
           />
 
-          <Text style={styles.label}>Batafsil ma'lumot *</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.description} *</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={description}
             onChangeText={setDescription}
-            placeholder="Buyum haqida batafsil yozing..."
+            placeholder={t.postForm.descriptionPlaceholder}
             placeholderTextColor={colors.textSecondary}
             multiline
             numberOfLines={4}
           />
 
-          <Text style={styles.label}>Joylashuv *</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.location} *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={location}
             onChangeText={setLocation}
-            placeholder="Qayerda topdingiz/yo'qotdingiz?"
+            placeholder={t.postForm.locationPlaceholder}
             placeholderTextColor={colors.textSecondary}
           />
 
-          <Text style={styles.label}>Sana</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.dateOccurred}</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={dateOccurred}
             onChangeText={setDateOccurred}
-            placeholder="Qachon? (ixtiyoriy)"
+            placeholder={t.postForm.dateOccurredPlaceholder}
             placeholderTextColor={colors.textSecondary}
           />
 
           {type === 'lost' && (
             <>
-              <Text style={styles.label}>Mukofot miqdori</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t.postForm.reward}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 value={reward}
                 onChangeText={setReward}
-                placeholder="Masalan: 100,000 so'm (ixtiyoriy)"
+                placeholder={t.postForm.rewardPlaceholder}
                 placeholderTextColor={colors.textSecondary}
               />
             </>
           )}
 
-          <Text style={styles.label}>Aloqa uchun telefon *</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.contact} *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={contact}
             onChangeText={setContact}
-            placeholder="+998 XX XXX XX XX"
+            placeholder={t.postForm.contactPlaceholder}
             placeholderTextColor={colors.textSecondary}
             keyboardType="phone-pad"
           />
 
           <TouchableOpacity
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
             onPress={handleSubmit}
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={colors.white} />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <MaterialIcons name="publish" size={24} color={colors.white} />
-                <Text style={styles.submitButtonText}>E'lon berish</Text>
+                <MaterialIcons name="publish" size={24} color="#FFFFFF" />
+                <Text style={styles.submitButtonText}>{t.postForm.submit}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -234,17 +238,15 @@ export default function AddPostScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
   headerTitle: {
     fontSize: typography.xxl,
     fontWeight: typography.bold,
-    color: colors.white,
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -253,7 +255,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.base,
     fontWeight: typography.semibold,
-    color: colors.text,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
@@ -266,30 +267,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
     borderWidth: 2,
-    borderColor: colors.border,
     borderRadius: borderRadius.md,
     paddingVertical: spacing.md,
     gap: spacing.sm,
   },
-  typeButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
   typeButtonText: {
     fontSize: typography.base,
     fontWeight: typography.semibold,
-    color: colors.text,
-  },
-  typeButtonTextActive: {
-    color: colors.white,
   },
   imagePicker: {
     height: 200,
-    backgroundColor: colors.surface,
     borderWidth: 2,
-    borderColor: colors.border,
     borderStyle: 'dashed',
     borderRadius: borderRadius.md,
     justifyContent: 'center',
@@ -302,17 +291,13 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: typography.base,
-    color: colors.textSecondary,
     marginTop: spacing.sm,
   },
   input: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     fontSize: typography.base,
-    color: colors.text,
   },
   textArea: {
     height: 100,
@@ -320,7 +305,6 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     alignItems: 'center',
@@ -332,7 +316,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.lg,
     fontWeight: typography.semibold,
   },
