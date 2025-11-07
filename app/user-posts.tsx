@@ -4,17 +4,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { staticColors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { usePosts } from '@/hooks/usePosts';
 import { PostCard } from '@/components';
 import { getSupabaseClient } from '@/template';
 import { UserProfile } from '@/types';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function UserPostsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { posts } = usePosts();
+  const { colors } = useTheme();
+  const { t } = useLanguage();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
@@ -43,22 +47,22 @@ export default function UserPostsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Foydalanuvchi</Text>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+          <Text style={styles.headerTitle}>{t.userPosts?.title || 'User'}</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={staticColors.primary} />
         </View>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Text style={styles.headerTitle}>
-          {userProfile?.username || 'Foydalanuvchi'}
+          {userProfile?.username || t.userPosts?.title || 'User'}
         </Text>
       </View>
 
@@ -67,41 +71,41 @@ export default function UserPostsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
-        <View style={styles.profileSection}>
+        <View style={[styles.profileSection, { backgroundColor: colors.surface }]}>
           {userProfile?.avatar_url ? (
             <Image
               source={{ uri: userProfile.avatar_url }}
-              style={styles.avatar}
+              style={[styles.avatar, { borderColor: colors.primary }]}
               contentFit="cover"
             />
           ) : (
-            <View style={styles.avatar}>
+            <View style={[styles.avatar, { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}>
               <MaterialIcons name="person" size={48} color={colors.primary} />
             </View>
           )}
-          <Text style={styles.username}>{userProfile?.username || 'Foydalanuvchi'}</Text>
-          <Text style={styles.email}>{userProfile?.email}</Text>
+          <Text style={[styles.username, { color: colors.text }]}>{userProfile?.username || t.profile.username}</Text>
+          <Text style={[styles.email, { color: colors.textSecondary }]}>{userProfile?.email}</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userPosts.length}</Text>
-              <Text style={styles.statLabel}>E'lonlar</Text>
+              <Text style={[styles.statValue, { color: colors.primary }]}>{userPosts.length}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t.userPosts?.posts || 'Posts'}</Text>
             </View>
           </View>
           <TouchableOpacity
-            style={styles.messageButton}
-            onPress={() => router.push(`/send-message?userId=${userId}&username=${userProfile?.username || 'Foydalanuvchi'}`)}
+            style={[styles.messageButton, { backgroundColor: colors.primary }]}
+            onPress={() => router.push(`/send-message?userId=${userId}&username=${userProfile?.username || t.profile.username}`)}
           >
-            <MaterialIcons name="chat" size={20} color={colors.white} />
-            <Text style={styles.messageButtonText}>Xabar yuborish</Text>
+            <MaterialIcons name="chat" size={20} color={staticColors.white} />
+            <Text style={[styles.messageButtonText, { color: staticColors.white }]}>{t.userPosts?.sendMessage || 'Send Message'}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.postsSection}>
-          <Text style={styles.sectionTitle}>E'lonlar</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.userPosts?.posts || 'Posts'}</Text>
           {userPosts.length === 0 ? (
             <View style={styles.emptyContainer}>
               <MaterialIcons name="inbox" size={64} color={colors.textSecondary} />
-              <Text style={styles.emptyText}>Hozircha e'lonlar yo'q</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t.profile.noPosts}</Text>
             </View>
           ) : (
             userPosts.map(post => <PostCard key={post.id} post={post} />)
@@ -115,20 +119,18 @@ export default function UserPostsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
   headerTitle: {
     fontSize: typography.xxl,
     fontWeight: typography.bold,
-    color: colors.white,
+    color: staticColors.white,
   },
   loadingContainer: {
     flex: 1,
@@ -139,7 +141,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileSection: {
-    backgroundColor: colors.surface,
     alignItems: 'center',
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.md,
@@ -150,23 +151,19 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.md,
     overflow: 'hidden',
     borderWidth: 3,
-    borderColor: colors.primary,
   },
   username: {
     fontSize: typography.xxl,
     fontWeight: typography.bold,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   email: {
     fontSize: typography.base,
-    color: colors.textSecondary,
     marginBottom: spacing.lg,
   },
   statsContainer: {
@@ -180,11 +177,9 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: typography.xxl,
     fontWeight: typography.bold,
-    color: colors.primary,
   },
   statLabel: {
     fontSize: typography.sm,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
   postsSection: {
@@ -193,7 +188,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.xl,
     fontWeight: typography.bold,
-    color: colors.text,
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
   },
@@ -203,13 +197,11 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: typography.base,
-    color: colors.textSecondary,
     marginTop: spacing.md,
   },
   messageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.md,
@@ -218,7 +210,6 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   messageButtonText: {
-    color: colors.white,
     fontSize: typography.base,
     fontWeight: typography.semibold,
   },

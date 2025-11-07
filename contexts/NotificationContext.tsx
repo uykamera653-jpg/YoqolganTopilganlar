@@ -12,6 +12,7 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    priority: Notifications.AndroidNotificationPriority.HIGH,
   }),
 });
 
@@ -94,11 +95,31 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      // Setup Android notification channel first
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'FINDO Notifications',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#5C6BC0',
+          sound: 'default',
+          enableVibrate: true,
+          showBadge: true,
+        });
+      }
+
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
       if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
+        const { status } = await Notifications.requestPermissionsAsync({
+          ios: {
+            allowAlert: true,
+            allowBadge: true,
+            allowSound: true,
+            allowAnnouncements: true,
+          },
+        });
         finalStatus = status;
       }
 
@@ -107,19 +128,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: 'your-project-id', // This will be automatically configured by Expo
-      });
-
-      if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#6366F1',
-          sound: 'default',
-        });
-      }
+      const tokenData = await Notifications.getExpoPushTokenAsync();
 
       return tokenData.data;
     } catch (error) {
