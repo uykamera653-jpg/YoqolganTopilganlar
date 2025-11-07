@@ -91,5 +91,6 @@ export function useMessages(otherUserId?: string) {
     sendMessage,
     refreshMessages: loadMessages,
     refreshConversations: loadConversations,
+    refreshUnreadCount: loadUnreadCount,
   };
 }

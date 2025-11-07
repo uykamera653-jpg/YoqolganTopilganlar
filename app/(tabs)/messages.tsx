@@ -1,13 +1,26 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, AppState } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import * as Notifications from 'expo-notifications';
+import { Audio } from 'expo-av';
 import { spacing } from '@/constants/theme';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/template';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { messageService } from '@/services/messageService';
+
+// Notification configuration
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function MessagesScreen() {
   const insets = useSafeAreaInsets();
@@ -16,6 +29,117 @@ export default function MessagesScreen() {
   const { conversations, unreadCount, loading } = useMessages();
   const { t } = useLanguage();
   const { colors } = useTheme();
+  
+  const previousUnreadCount = useRef(0);
+  const pollingInterval = useRef<NodeJS.Timeout | null>(null);
+  const appState = useRef(AppState.currentState);
+
+  // Request notification permissions
+  useEffect(() => {
+    registerForPushNotifications();
+    return () => {
+      if (pollingInterval.current) {
+        clearInterval(pollingInterval.current);
+      }
+    };
+  }, []);
+
+  // Setup polling when user is logged in
+  useEffect(() => {
+    if (user) {
+      startPolling();
+      
+      // App state listener
+      const subscription = AppState.addEventListener('change', nextAppState => {
+        if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+          startPolling();
+        } else if (nextAppState.match(/inactive|background/)) {
+          stopPolling();
+        }
+        appState.current = nextAppState;
+      });
+
+      return () => {
+        stopPolling();
+        subscription.remove();
+      };
+    } else {
+      stopPolling();
+    }
+  }, [user]);
+
+  // Detect new messages and show notification
+  useEffect(() => {
+    if (user && unreadCount > previousUnreadCount.current && previousUnreadCount.current !== 0) {
+      showNewMessageNotification(unreadCount - previousUnreadCount.current);
+    }
+    previousUnreadCount.current = unreadCount;
+  }, [unreadCount]);
+
+  const registerForPushNotifications = async () => {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    
+    if (finalStatus !== 'granted') {
+      console.log('Notification permissions not granted');
+    }
+  };
+
+  const showNewMessageNotification = async (newMessageCount: number) => {
+    // Play notification sound
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('@/assets/notification.mp3'),
+        { shouldPlay: true, volume: 1.0 },
+        undefined,
+        false
+      );
+      
+      // Unload sound after playing
+      setTimeout(() => {
+        sound.unloadAsync();
+      }, 2000);
+    } catch (error) {
+      // If sound file not found, use system sound
+      console.log('Using system notification sound');
+    }
+
+    // Show notification
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: t.messages?.newMessage || 'Yangi xabar',
+        body: newMessageCount === 1 
+          ? t.messages?.oneNewMessage || 'Sizga yangi xabar keldi'
+          : `${newMessageCount} ta yangi xabar`,
+        sound: true,
+        badge: unreadCount,
+      },
+      trigger: null, // Show immediately
+    });
+  };
+
+  const startPolling = () => {
+    stopPolling(); // Clear existing interval
+    
+    // Poll every 10 seconds
+    pollingInterval.current = setInterval(async () => {
+      if (user) {
+        await messageService.getUnreadCount(user.id);
+      }
+    }, 10000);
+  };
+
+  const stopPolling = () => {
+    if (pollingInterval.current) {
+      clearInterval(pollingInterval.current);
+      pollingInterval.current = null;
+    }
+  };
 
   if (!user) {
     return (
