@@ -96,16 +96,16 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: colors.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        style={[styles.container, { paddingTop: insets.top }]}
+        style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
+          <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
             <MaterialIcons name="search" size={48} color={colors.white} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>{t.appName}</Text>
@@ -193,28 +193,24 @@ export default function LoginScreen() {
                   size={24}
                   color={termsAccepted ? colors.primary : colors.textSecondary}
                 />
-                <Text style={[styles.termsText, { color: colors.text }]}>
-                  {t.auth.termsAgree.split(t.auth.privacyPolicy)[0]}
-                  <Text
-                    style={[styles.termsLink, { color: colors.primary }]}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      router.push('/privacy-policy');
-                    }}
-                  >
-                    {t.auth.privacyPolicy}
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.termsText, { color: colors.text }]}>
+                    {t.auth.termsAgree.split(t.auth.privacyPolicy)[0]}
                   </Text>
-                  {' ' + t.auth.and + ' '}
-                  <Text
-                    style={[styles.termsLink, { color: colors.primary }]}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      router.push('/terms-of-service');
-                    }}
-                  >
-                    {t.auth.termsOfService}
-                  </Text>
-                </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => router.push('/privacy-policy')}>
+                      <Text style={[styles.termsLink, { color: colors.primary }]}>
+                        {t.auth.privacyPolicy}
+                      </Text>
+                    </TouchableOpacity>
+                    <Text style={[styles.termsText, { color: colors.text }]}> {t.auth.and} </Text>
+                    <TouchableOpacity onPress={() => router.push('/terms-of-service')}>
+                      <Text style={[styles.termsLink, { color: colors.primary }]}>
+                        {t.auth.termsOfService}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </TouchableOpacity>
             </>
           )}

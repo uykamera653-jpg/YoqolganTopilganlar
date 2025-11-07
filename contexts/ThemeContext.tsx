@@ -63,7 +63,7 @@ const THEME_STORAGE_KEY = 'findo_theme';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('auto');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
   
   const getActiveTheme = (): ActiveTheme => {
     if (themeMode === 'auto') {
