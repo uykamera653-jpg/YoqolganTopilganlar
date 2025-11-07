@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity }
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { spacing, typography, borderRadius } from '@/constants/theme';
+import { spacing, typography, borderRadius, staticColors } from '@/constants/theme';
 import { usePosts } from '@/hooks/usePosts';
 import { Post } from '@/types';
 import { PostCard } from '@/components';
@@ -66,8 +66,8 @@ export default function PostsListScreen() {
         options={{
           title: getFilterTitle(),
           headerShown: true,
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: colors.white,
+          headerStyle: { backgroundColor: staticColors.primary },
+          headerTintColor: staticColors.white,
         }}
       />
       <View style={[styles.container, { backgroundColor: colors.background, paddingBottom: insets.bottom }]}>
