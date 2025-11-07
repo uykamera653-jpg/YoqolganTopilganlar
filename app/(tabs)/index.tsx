@@ -84,6 +84,31 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
+        <View style={[styles.warningBanner, { backgroundColor: colors.warning + '15', borderColor: colors.warning }]}>
+          <MaterialIcons name="warning" size={24} color={colors.warning} />
+          <Text style={[styles.warningText, { color: colors.text }]}>
+            {language === 'uz' ? 'Shaxsiy ma\'lumotlarni e\'lonlarda tarqatmang! Telefon raqam, manzil va boshqa maxfiy ma\'lumotlarni ehtiyot bilan ulashing.' :
+             language === 'ru' ? 'Не распространяйте личную информацию в объявлениях! Будьте осторожны при обмене телефонным номером, адресом и другой конфиденциальной информацией.' :
+             'Do not share personal information in posts! Be careful when sharing phone numbers, addresses, and other confidential information.'}
+          </Text>
+        </View>
+
+        <View style={[styles.mediaContainer, { backgroundColor: colors.surface }]}>
+          <View style={styles.mediaPlaceholder}>
+            <MaterialIcons name="photo-library" size={48} color={colors.textSecondary} />
+            <Text style={[styles.mediaPlaceholderText, { color: colors.textSecondary }]}>
+              {language === 'uz' ? 'Reklama uchun joy' :
+               language === 'ru' ? 'Место для рекламы' :
+               'Advertisement Space'}
+            </Text>
+            <Text style={[styles.mediaPlaceholderSubtext, { color: colors.textTertiary }]}>
+              {language === 'uz' ? 'Bu yerga rasm yoki video qo\'yishingiz mumkin' :
+               language === 'ru' ? 'Здесь вы можете разместить изображение или видео' :
+               'You can place images or videos here'}
+            </Text>
+          </View>
+        </View>
+
         <View style={[styles.bannerContainer, { backgroundColor: colors.surface }]}>
           <View style={[styles.bannerIconBg, { backgroundColor: colors.primary + '20' }]}>
             <MaterialIcons name="verified" size={40} color={colors.primary} />
@@ -231,5 +256,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: spacing.sm,
     marginBottom: spacing.sm,
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    gap: spacing.sm,
+  },
+  warningText: {
+    flex: 1,
+    fontSize: typography.sm,
+    lineHeight: 18,
+  },
+  mediaContainer: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
+  mediaPlaceholder: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+  },
+  mediaPlaceholderText: {
+    fontSize: typography.lg,
+    fontWeight: typography.semibold,
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  mediaPlaceholderSubtext: {
+    fontSize: typography.sm,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
 });

@@ -184,34 +184,39 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              <TouchableOpacity
-                style={styles.termsContainer}
-                onPress={() => setTermsAccepted(!termsAccepted)}
-              >
-                <MaterialIcons
-                  name={termsAccepted ? 'check-box' : 'check-box-outline-blank'}
-                  size={24}
-                  color={termsAccepted ? colors.primary : colors.textSecondary}
-                />
+              <View style={styles.termsContainer}>
+                <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
+                  <MaterialIcons
+                    name={termsAccepted ? 'check-box' : 'check-box-outline-blank'}
+                    size={24}
+                    color={termsAccepted ? colors.primary : colors.textSecondary}
+                  />
+                </TouchableOpacity>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.termsText, { color: colors.text }]}>
                     {t.auth.termsAgree.split(t.auth.privacyPolicy)[0]}
                   </Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => router.push('/privacy-policy')}>
+                    <TouchableOpacity onPress={(e) => {
+                      e.stopPropagation();
+                      router.push('/privacy-policy');
+                    }}>
                       <Text style={[styles.termsLink, { color: colors.primary }]}>
                         {t.auth.privacyPolicy}
                       </Text>
                     </TouchableOpacity>
                     <Text style={[styles.termsText, { color: colors.text }]}> {t.auth.and} </Text>
-                    <TouchableOpacity onPress={() => router.push('/terms-of-service')}>
+                    <TouchableOpacity onPress={(e) => {
+                      e.stopPropagation();
+                      router.push('/terms-of-service');
+                    }}>
                       <Text style={[styles.termsLink, { color: colors.primary }]}>
                         {t.auth.termsOfService}
                       </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </View>
             </>
           )}
 
@@ -325,6 +330,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 16,
     gap: 8,
+    paddingHorizontal: 4,
   },
   termsText: {
     flex: 1,
