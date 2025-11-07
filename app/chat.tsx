@@ -13,15 +13,19 @@ import {
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing } from '@/constants/theme';
+import { staticColors, spacing } from '@/constants/theme';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/template';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { userId, username } = useLocalSearchParams<{ userId: string; username: string }>();
   const { user } = useAuth();
   const { messages, loading, sending, sendMessage } = useMessages(userId);
+  const { colors } = useTheme();
+  const { t } = useLanguage();
   const [messageText, setMessageText] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
@@ -58,15 +62,15 @@ export default function ChatScreen() {
     >
       <Stack.Screen
         options={{
-          title: username || 'Chat',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#FFFFFF',
+          title: username || t.messages.chatWith,
+          headerStyle: { backgroundColor: staticColors.primary },
+          headerTintColor: staticColors.white,
         }}
       />
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         {loading && messages.length === 0 ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={staticColors.primary} />
           </View>
         ) : (
           <FlatList
@@ -85,13 +89,13 @@ export default function ChatScreen() {
                   <View
                     style={[
                       styles.messageBubble,
-                      isMine ? styles.myBubble : styles.theirBubble,
+                      isMine ? [styles.myBubble, { backgroundColor: staticColors.primary }] : [styles.theirBubble, { backgroundColor: colors.surface }],
                     ]}
                   >
                     <Text
                       style={[
                         styles.messageText,
-                        isMine ? styles.myMessageText : styles.theirMessageText,
+                        isMine ? { color: staticColors.white } : { color: colors.text },
                       ]}
                     >
                       {item.message}
@@ -99,7 +103,7 @@ export default function ChatScreen() {
                     <Text
                       style={[
                         styles.messageTime,
-                        isMine ? styles.myMessageTime : styles.theirMessageTime,
+                        isMine ? { color: 'rgba(255, 255, 255, 0.7)', textAlign: 'right' } : { color: colors.textSecondary },
                       ]}
                     >
                       {formatTime(item.created_at)}
@@ -116,10 +120,10 @@ export default function ChatScreen() {
           />
         )}
 
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom, backgroundColor: colors.surface, borderTopColor: colors.border }]}>
           <TextInput
-            style={styles.input}
-            placeholder="Xabar yozing..."
+            style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
+            placeholder={t.messages.typeMessage}
             placeholderTextColor={colors.textSecondary}
             value={messageText}
             onChangeText={setMessageText}
@@ -127,14 +131,14 @@ export default function ChatScreen() {
             maxLength={500}
           />
           <TouchableOpacity
-            style={[styles.sendButton, (!messageText.trim() || sending) && styles.sendButtonDisabled]}
+            style={[styles.sendButton, { backgroundColor: staticColors.primary }, (!messageText.trim() || sending) && styles.sendButtonDisabled]}
             onPress={handleSend}
             disabled={!messageText.trim() || sending}
           >
             {sending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={staticColors.white} />
             ) : (
-              <MaterialIcons name="send" size={24} color="#FFFFFF" />
+              <MaterialIcons name="send" size={24} color={staticColors.white} />
             )}
           </TouchableOpacity>
         </View>
@@ -146,7 +150,6 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -173,33 +176,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   myBubble: {
-    backgroundColor: colors.primary,
     borderBottomRightRadius: 4,
   },
   theirBubble: {
-    backgroundColor: colors.surface,
     borderBottomLeftRadius: 4,
   },
   messageText: {
     fontSize: 15,
     lineHeight: 20,
   },
-  myMessageText: {
-    color: '#FFFFFF',
-  },
-  theirMessageText: {
-    color: colors.text,
-  },
   messageTime: {
     fontSize: 11,
     marginTop: 4,
-  },
-  myMessageTime: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'right',
-  },
-  theirMessageTime: {
-    color: colors.textSecondary,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -207,27 +195,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
-    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   input: {
     flex: 1,
     minHeight: 40,
     maxHeight: 100,
-    backgroundColor: colors.background,
     borderRadius: 20,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     marginRight: spacing.sm,
     fontSize: 15,
-    color: colors.text,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
