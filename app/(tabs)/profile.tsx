@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { userService } from '@/services/userService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { spacing, typography, borderRadius } from '@/constants/theme';
 
 type Language = 'uz' | 'en' | 'ru';
 type ThemeMode = 'light' | 'dark';

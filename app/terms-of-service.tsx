@@ -8,7 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export default function TermsOfServiceScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { colors } = useTheme();
 
   const termsContent = {
@@ -274,7 +274,7 @@ For questions or issues:
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <Text style={[styles.text, { color: colors.text }]}>
-          {termsContent[useLanguage().language as keyof typeof termsContent]}
+          {termsContent[language]}
         </Text>
       </ScrollView>
     </View>

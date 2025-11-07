@@ -6,6 +6,7 @@ import { useAuth, useAlert } from '@/template';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { spacing, typography, borderRadius } from '@/constants/theme';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
