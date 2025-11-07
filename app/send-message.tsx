@@ -48,7 +48,7 @@ export default function SendMessageScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top }]}
+      style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
@@ -65,11 +65,11 @@ export default function SendMessageScreen() {
       <View style={styles.content}>
         <View style={styles.userInfo}>
           <MaterialIcons name="person" size={64} color={colors.primary} />
-          <Text style={styles.username}>{username}</Text>
+          <Text style={[styles.username, { color: colors.text }]}>{username}</Text>
         </View>
 
         <TextInput
-          style={[styles.input, { borderColor: colors.border }]}
+          style={[styles.input, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
           placeholder="Type your message here..."
           placeholderTextColor={colors.textSecondary}
           multiline
@@ -78,7 +78,7 @@ export default function SendMessageScreen() {
           maxLength={500}
           editable={!sending}
         />
-        <Text style={styles.charCount}>{message.length}/500</Text>
+        <Text style={[styles.charCount, { color: colors.textSecondary }]}>{message.length}/500</Text>
 
         <TouchableOpacity
           style={[
@@ -106,7 +106,6 @@ export default function SendMessageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -119,28 +118,22 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
     marginTop: spacing.sm,
   },
   input: {
-    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: spacing.md,
     fontSize: 16,
-    color: colors.text,
     minHeight: 200,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: colors.border,
   },
   charCount: {
     fontSize: 12,
-    color: colors.textSecondary,
     textAlign: 'right',
     marginTop: spacing.sm,
   },
   sendButton: {
-    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: spacing.md,
     flexDirection: 'row',
