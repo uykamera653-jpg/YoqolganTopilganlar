@@ -2,10 +2,12 @@ import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity }
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
+import { spacing, typography, borderRadius } from '@/constants/theme';
 import { usePosts } from '@/hooks/usePosts';
 import { Post } from '@/types';
 import { PostCard } from '@/components';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type FilterType = 'all' | 'found' | 'lost' | 'reward';
 
@@ -14,6 +16,8 @@ export default function PostsListScreen() {
   const router = useRouter();
   const { filter = 'all' } = useLocalSearchParams<{ filter: FilterType }>();
   const { posts, loading, refreshPosts } = usePosts();
+  const { t } = useLanguage();
+  const { colors } = useTheme();
 
   const getFilteredPosts = (): Post[] => {
     switch (filter) {
@@ -33,13 +37,13 @@ export default function PostsListScreen() {
   const getFilterTitle = () => {
     switch (filter) {
       case 'found':
-        return 'Topilgan buyumlar';
+        return t.postTypes.foundItems;
       case 'lost':
-        return 'Yo\'qotilgan buyumlar';
+        return t.postTypes.lostItems;
       case 'reward':
-        return 'Mukofotli e\'lonlar';
+        return t.postTypes.rewardedItems;
       default:
-        return 'Barcha e\'lonlar';
+        return t.postTypes.allPosts;
     }
   };
 
@@ -74,16 +78,16 @@ export default function PostsListScreen() {
         ) : filteredPosts.length === 0 ? (
           <View style={styles.emptyContainer}>
             <MaterialIcons name={getFilterIcon()} size={64} color={colors.textSecondary} />
-            <Text style={styles.emptyText}>E'lonlar topilmadi</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: colors.text }]}>E'lonlar topilmadi</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
               Bu kategoriyada hozircha e'lonlar yo'q
             </Text>
             <TouchableOpacity
-              style={styles.backButton}
+              style={[styles.backButton, { backgroundColor: colors.primary }]}
               onPress={() => router.back()}
             >
               <MaterialIcons name="arrow-back" size={20} color={colors.white} />
-              <Text style={styles.backButtonText}>Orqaga</Text>
+              <Text style={[styles.backButtonText, { color: colors.white }]}>{t.back}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -105,7 +109,6 @@ export default function PostsListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -121,19 +124,16 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: typography.lg,
     fontWeight: typography.semibold,
-    color: colors.text,
     marginTop: spacing.md,
   },
   emptySubtext: {
     fontSize: typography.base,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
     textAlign: 'center',
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.md,
@@ -141,7 +141,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   backButtonText: {
-    color: colors.white,
     fontSize: typography.base,
     fontWeight: typography.semibold,
   },
