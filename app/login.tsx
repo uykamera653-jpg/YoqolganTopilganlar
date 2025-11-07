@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import { useAuth, useAlert } from '@/template';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -12,41 +13,50 @@ export default function LoginScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
 
+  const { t } = useLanguage();
+  const { colors } = useTheme();
+
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSendOTP = async () => {
     if (!email.trim()) {
-      showAlert('Xato', 'Email manzilini kiriting');
+      showAlert(t.error, t.errors.fillAllFields);
       return;
     }
 
     const { error } = await sendOTP(email);
     if (error) {
-      showAlert('Xato', error);
+      showAlert(t.error, error);
     } else {
       setOtpSent(true);
-      showAlert('Muvaffaqiyatli', 'OTP kod emailingizga yuborildi');
+      showAlert(t.success, t.auth.otpSent);
     }
   };
 
   const handleRegister = async () => {
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      showAlert('Xato', 'Barcha maydonlarni to\'ldiring');
+      showAlert(t.error, t.errors.fillAllFields);
       return;
     }
 
     if (password !== confirmPassword) {
-      showAlert('Xato', 'Parollar mos kelmaydi');
+      showAlert(t.error, t.errors.passwordMismatch);
       return;
     }
 
     if (password.length < 6) {
-      showAlert('Xato', 'Parol kamida 6 belgidan iborat bo\'lishi kerak');
+      showAlert(t.error, t.errors.weakPassword);
+      return;
+    }
+
+    if (!termsAccepted) {
+      showAlert(t.error, t.auth.termsRequired);
       return;
     }
 
@@ -56,28 +66,28 @@ export default function LoginScreen() {
     }
 
     if (!otp.trim()) {
-      showAlert('Xato', 'OTP kodni kiriting');
+      showAlert(t.error, t.auth.enterOtp);
       return;
     }
 
     const { error } = await verifyOTPAndLogin(email, otp, { password });
     if (error) {
-      showAlert('Xato', error);
+      showAlert(t.error, error);
     } else {
-      showAlert('Muvaffaqiyatli', 'Ro\'yxatdan o\'tdingiz!');
+      showAlert(t.success, t.success);
       router.replace('/(tabs)');
     }
   };
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      showAlert('Xato', 'Email va parolni kiriting');
+      showAlert(t.error, t.errors.fillAllFields);
       return;
     }
 
     const { error } = await signInWithPassword(email, password);
     if (error) {
-      showAlert('Xato', error);
+      showAlert(t.error, error);
     } else {
       router.replace('/(tabs)');
     }
@@ -97,43 +107,43 @@ export default function LoginScreen() {
           <View style={styles.logoContainer}>
             <MaterialIcons name="search" size={48} color={colors.white} />
           </View>
-          <Text style={styles.title}>FINDO</Text>
-          <Text style={styles.subtitle}>Yo'qotdingizmi? Topdingizmi? E'lon qoldiring!</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t.appName}</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t.appTagline}</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.modeSelector}>
             <TouchableOpacity
-              style={[styles.modeButton, mode === 'login' && styles.modeButtonActive]}
+              style={[styles.modeButton, { backgroundColor: colors.surface, borderColor: colors.border }, mode === 'login' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
               onPress={() => {
                 setMode('login');
                 setOtpSent(false);
                 setOtp('');
               }}
             >
-              <Text style={[styles.modeButtonText, mode === 'login' && styles.modeButtonTextActive]}>
-                Kirish
+              <Text style={[styles.modeButtonText, { color: colors.text }, mode === 'login' && { color: colors.white }]}>
+                {t.auth.login}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.modeButton, mode === 'register' && styles.modeButtonActive]}
+              style={[styles.modeButton, { backgroundColor: colors.surface, borderColor: colors.border }, mode === 'register' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
               onPress={() => {
                 setMode('register');
                 setOtpSent(false);
                 setOtp('');
               }}
             >
-              <Text style={[styles.modeButtonText, mode === 'register' && styles.modeButtonTextActive]}>
-                Ro'yxatdan o'tish
+              <Text style={[styles.modeButtonText, { color: colors.text }, mode === 'register' && { color: colors.white }]}>
+                {t.auth.register}
               </Text>
             </TouchableOpacity>
           </View>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={email}
             onChangeText={setEmail}
-            placeholder="Email"
+            placeholder={t.auth.email}
             placeholderTextColor={colors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -141,36 +151,70 @@ export default function LoginScreen() {
           />
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={password}
             onChangeText={setPassword}
-            placeholder="Parol"
+            placeholder={t.auth.password}
             placeholderTextColor={colors.textSecondary}
             secureTextEntry
             editable={!otpSent || mode === 'login'}
           />
 
           {mode === 'register' && !otpSent && (
-            <TextInput
-              style={styles.input}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Parolni tasdiqlash"
-              placeholderTextColor={colors.textSecondary}
-              secureTextEntry
-            />
+            <>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder={t.auth.confirmPassword}
+                placeholderTextColor={colors.textSecondary}
+                secureTextEntry
+              />
+              <TouchableOpacity
+                style={styles.termsContainer}
+                onPress={() => setTermsAccepted(!termsAccepted)}
+              >
+                <MaterialIcons
+                  name={termsAccepted ? 'check-box' : 'check-box-outline-blank'}
+                  size={24}
+                  color={termsAccepted ? colors.primary : colors.textSecondary}
+                />
+                <Text style={[styles.termsText, { color: colors.text }]}>
+                  {t.auth.termsAgree.split(t.auth.privacyPolicy)[0]}
+                  <Text
+                    style={[styles.termsLink, { color: colors.primary }]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      router.push('/privacy-policy');
+                    }}
+                  >
+                    {t.auth.privacyPolicy}
+                  </Text>
+                  {' ' + t.auth.and + ' '}
+                  <Text
+                    style={[styles.termsLink, { color: colors.primary }]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      router.push('/terms-of-service');
+                    }}
+                  >
+                    {t.auth.termsOfService}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            </>
           )}
 
           {mode === 'register' && otpSent && (
             <>
-              <Text style={styles.otpInfo}>
-                OTP kod emailingizga yuborildi. Kodni kiriting:
+              <Text style={[styles.otpInfo, { color: colors.textSecondary }]}>
+                {t.auth.otpSent}
               </Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 value={otp}
                 onChangeText={setOtp}
-                placeholder="OTP kod"
+                placeholder={t.auth.enterOtp}
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="number-pad"
                 maxLength={6}
@@ -179,15 +223,15 @@ export default function LoginScreen() {
           )}
 
           <TouchableOpacity
-            style={[styles.submitButton, operationLoading && styles.submitButtonDisabled]}
+            style={[styles.submitButton, { backgroundColor: colors.primary }, operationLoading && styles.submitButtonDisabled]}
             onPress={mode === 'login' ? handleLogin : handleRegister}
             disabled={operationLoading}
           >
             {operationLoading ? (
-              <ActivityIndicator color={colors.white} />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.submitButtonText}>
-                {mode === 'login' ? 'Kirish' : otpSent ? 'Tasdiqlash' : 'Ro\'yxatdan o\'tish'}
+                {mode === 'login' ? t.auth.login : otpSent ? t.auth.verifyAndRegister : t.auth.register}
               </Text>
             )}
           </TouchableOpacity>
@@ -198,7 +242,7 @@ export default function LoginScreen() {
               onPress={handleSendOTP}
               disabled={operationLoading}
             >
-              <Text style={styles.resendButtonText}>OTP kodni qayta yuborish</Text>
+              <Text style={[styles.resendButtonText, { color: colors.primary }]}>{t.auth.otpSent}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -210,7 +254,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -225,22 +268,19 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 96,
     height: 96,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
+    borderRadius: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   title: {
-    fontSize: typography.xxxl,
-    fontWeight: typography.bold,
-    color: colors.text,
+    fontSize: 32,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: typography.base,
-    color: colors.textSecondary,
+    fontSize: 16,
     textAlign: 'center',
   },
   form: {
@@ -248,66 +288,68 @@ const styles = StyleSheet.create({
   },
   modeSelector: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.xs,
-    marginBottom: spacing.lg,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 24,
   },
   modeButton: {
     flex: 1,
-    paddingVertical: spacing.sm,
+    paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: borderRadius.sm,
-  },
-  modeButtonActive: {
-    backgroundColor: colors.primary,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   modeButtonText: {
-    fontSize: typography.base,
-    fontWeight: typography.semibold,
-    color: colors.textSecondary,
-  },
-  modeButtonTextActive: {
-    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
   input: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    fontSize: typography.base,
-    color: colors.text,
-    marginBottom: spacing.md,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    gap: 8,
+  },
+  termsText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  termsLink: {
+    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
   otpInfo: {
-    fontSize: typography.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    fontSize: 14,
+    marginBottom: 12,
     textAlign: 'center',
   },
   submitButton: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
-    marginTop: spacing.sm,
+    marginTop: 8,
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
-    color: colors.white,
-    fontSize: typography.lg,
-    fontWeight: typography.semibold,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
   resendButton: {
-    marginTop: spacing.md,
+    marginTop: 16,
     alignItems: 'center',
   },
   resendButtonText: {
-    color: colors.primary,
-    fontSize: typography.base,
-    fontWeight: typography.medium,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

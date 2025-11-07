@@ -4,14 +4,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useAuth, useAlert } from '@/template';
 import { usePosts } from '@/hooks/usePosts';
 import { useAdmin } from '@/hooks/useAdmin';
-import { Post } from '@/types';
 import { PostCard } from '@/components';
 import { useRouter } from 'expo-router';
 import { userService } from '@/services/userService';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
+
+type Language = 'uz' | 'en' | 'ru';
+type ThemeMode = 'light' | 'dark';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -20,11 +23,14 @@ export default function ProfileScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const { isAdmin } = useAdmin();
+  const { language, setLanguage, t } = useLanguage();
+  const { themeMode, activeTheme, setThemeMode, colors } = useTheme();
 
   const [editMode, setEditMode] = useState(false);
   const [username, setUsername] = useState(user?.username || '');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const myPosts = posts.filter(post => post.user_id === user?.id);
 
@@ -36,15 +42,15 @@ export default function ProfileScreen() {
   }, [user]);
 
   const handleLogout = async () => {
-    showAlert('Chiqish', 'Haqiqatan ham tizimdan chiqmoqchimisiz?', [
-      { text: 'Yo\'q', style: 'cancel' },
+    showAlert(t.profile.logout, t.profile.confirmLogout, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Ha',
+        text: t.profile.logout,
         style: 'destructive',
         onPress: async () => {
           const { error } = await logout();
           if (error) {
-            showAlert('Xato', error);
+            showAlert(t.error, error);
           } else {
             router.replace('/login');
           }
@@ -54,17 +60,17 @@ export default function ProfileScreen() {
   };
 
   const handleDeletePost = async (postId: string) => {
-    showAlert('O\'chirish', 'E\'lonni o\'chirmoqchimisiz?', [
-      { text: 'Yo\'q', style: 'cancel' },
+    showAlert(t.delete, t.postDetail.confirmDelete, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Ha',
+        text: t.delete,
         style: 'destructive',
         onPress: async () => {
           const { success, error } = await deletePost(postId);
           if (success) {
-            showAlert('Muvaffaqiyatli', 'E\'lon o\'chirildi');
+            showAlert(t.success, t.postDetail.postDeleted);
           } else {
-            showAlert('Xato', error || 'E\'lonni o\'chirishda xatolik');
+            showAlert(t.error, error || t.errors.generic);
           }
         },
       },
@@ -78,7 +84,7 @@ export default function ProfileScreen() {
   const pickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showAlert('Ruxsat kerak', 'Iltimos, galereya uchun ruxsat bering');
+      showAlert(t.error, t.errors.uploadError);
       return;
     }
 
@@ -99,7 +105,7 @@ export default function ProfileScreen() {
     if (!user) return;
 
     if (!username.trim()) {
-      showAlert('Xato', 'Ism bo\'sh bo\'lmasligi kerak');
+      showAlert(t.error, t.errors.fillAllFields);
       return;
     }
 
@@ -111,7 +117,7 @@ export default function ProfileScreen() {
       const { url, error: uploadError } = await userService.uploadAvatar(user.id, avatarUri);
       if (uploadError) {
         setUpdating(false);
-        showAlert('Xato', uploadError);
+        showAlert(t.error, uploadError);
         return;
       }
       newAvatarUrl = url || undefined;
@@ -123,30 +129,29 @@ export default function ProfileScreen() {
 
     if (success) {
       setEditMode(false);
-      showAlert('Muvaffaqiyatli', 'Profil yangilandi');
-      // Force re-render by navigating
+      showAlert(t.success, t.profile.profileUpdated);
       setTimeout(() => {
         router.replace('/(tabs)');
       }, 500);
     } else {
-      showAlert('Xato', error || 'Profilni yangilashda xatolik');
+      showAlert(t.error, error || t.errors.generic);
     }
   };
 
   if (!user) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profil</Text>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+          <Text style={styles.headerTitle}>{t.profile.title}</Text>
         </View>
         <View style={styles.notLoggedIn}>
           <MaterialIcons name="person-off" size={64} color={colors.textSecondary} />
-          <Text style={styles.notLoggedInText}>Tizimga kirmagansiz</Text>
+          <Text style={[styles.notLoggedInText, { color: colors.textSecondary }]}>{t.auth.login}</Text>
           <TouchableOpacity
-            style={styles.loginButton}
+            style={[styles.loginButton, { backgroundColor: colors.primary }]}
             onPress={() => router.push('/login')}
           >
-            <Text style={styles.loginButtonText}>Kirish</Text>
+            <Text style={styles.loginButtonText}>{t.auth.login}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -154,22 +159,22 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profil</Text>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <Text style={styles.headerTitle}>{t.profile.title}</Text>
         <TouchableOpacity onPress={handleLogout}>
-          <MaterialIcons name="logout" size={24} color={colors.white} />
+          <MaterialIcons name="logout" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View style={styles.profileCard}>
+        <View style={[styles.profileCard, { backgroundColor: colors.surface }]}>
           <TouchableOpacity
-            style={styles.avatarContainer}
+            style={[styles.avatarContainer, { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}
             onPress={editMode ? pickAvatar : undefined}
             disabled={!editMode}
           >
@@ -184,8 +189,8 @@ export default function ProfileScreen() {
               <MaterialIcons name="person" size={48} color={colors.primary} />
             )}
             {editMode && (
-              <View style={styles.avatarEditBadge}>
-                <MaterialIcons name="edit" size={16} color={colors.white} />
+              <View style={[styles.avatarEditBadge, { backgroundColor: colors.primary }]}>
+                <MaterialIcons name="edit" size={16} color="#FFFFFF" />
               </View>
             )}
           </TouchableOpacity>
@@ -193,84 +198,168 @@ export default function ProfileScreen() {
           <View style={styles.profileInfo}>
             {editMode ? (
               <TextInput
-                style={styles.usernameInput}
+                style={[styles.usernameInput, { color: colors.text, borderBottomColor: colors.primary }]}
                 value={username}
                 onChangeText={setUsername}
-                placeholder="Ismingizni kiriting"
+                placeholder={t.profile.username}
                 placeholderTextColor={colors.textSecondary}
               />
             ) : (
-              <Text style={styles.username}>{user.username || 'Foydalanuvchi'}</Text>
+              <Text style={[styles.username, { color: colors.text }]}>{user.username || t.profile.username}</Text>
             )}
-            <Text style={styles.email}>{user.email}</Text>
+            <Text style={[styles.email, { color: colors.textSecondary }]}>{user.email}</Text>
           </View>
 
           {editMode ? (
             <View style={styles.editActions}>
               <TouchableOpacity
-                style={[styles.actionButton, styles.saveButton]}
+                style={[styles.actionButton, { backgroundColor: '#10B981' }]}
                 onPress={handleSaveProfile}
                 disabled={updating}
               >
                 {updating ? (
-                  <ActivityIndicator size="small" color={colors.white} />
+                  <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <>
-                    <MaterialIcons name="check" size={20} color={colors.white} />
-                    <Text style={styles.actionButtonText}>Saqlash</Text>
+                    <MaterialIcons name="check" size={20} color="#FFFFFF" />
+                    <Text style={styles.actionButtonText}>{t.save}</Text>
                   </>
                 )}
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.actionButton, styles.cancelButton]}
+                style={[styles.actionButton, { backgroundColor: colors.textSecondary }]}
                 onPress={() => {
                   setEditMode(false);
                   setUsername(user.username || '');
                   setAvatarUri(user.avatar_url || null);
                 }}
               >
-                <MaterialIcons name="close" size={20} color={colors.white} />
-                <Text style={styles.actionButtonText}>Bekor qilish</Text>
+                <MaterialIcons name="close" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t.cancel}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
-              style={[styles.actionButton, styles.editButton]}
+              style={[styles.actionButton, { backgroundColor: colors.primary }]}
               onPress={() => setEditMode(true)}
             >
-              <MaterialIcons name="edit" size={20} color={colors.white} />
-              <Text style={styles.actionButtonText}>Tahrirlash</Text>
+              <MaterialIcons name="edit" size={20} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>{t.edit}</Text>
             </TouchableOpacity>
           )}
 
           {isAdmin && (
             <TouchableOpacity
-              style={styles.adminButton}
+              style={[styles.adminButton, { backgroundColor: colors.primary }]}
               onPress={() => router.push('/admin')}
             >
-              <MaterialIcons name="admin-panel-settings" size={24} color={colors.white} />
+              <MaterialIcons name="admin-panel-settings" size={24} color="#FFFFFF" />
               <Text style={styles.adminButtonText}>Admin Panel</Text>
             </TouchableOpacity>
           )}
         </View>
 
+        <TouchableOpacity
+          style={[styles.settingsCard, { backgroundColor: colors.surface }]}
+          onPress={() => setShowSettings(!showSettings)}
+        >
+          <View style={styles.settingsHeader}>
+            <MaterialIcons name="settings" size={24} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.profile.settings}</Text>
+          </View>
+          <MaterialIcons
+            name={showSettings ? 'expand-less' : 'expand-more'}
+            size={24}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+
+        {showSettings && (
+          <View style={[styles.settingsContent, { backgroundColor: colors.surface }]}>
+            <View style={styles.settingItem}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>{t.profile.language}</Text>
+              <View style={styles.languageSelector}>
+                {(['uz', 'en', 'ru'] as Language[]).map((lang) => (
+                  <TouchableOpacity
+                    key={lang}
+                    style={[
+                      styles.languageButton,
+                      { backgroundColor: colors.background, borderColor: colors.border },
+                      language === lang && { backgroundColor: colors.primary, borderColor: colors.primary }
+                    ]}
+                    onPress={() => setLanguage(lang)}
+                  >
+                    <Text style={[
+                      styles.languageButtonText,
+                      { color: colors.text },
+                      language === lang && { color: '#FFFFFF' }
+                    ]}>
+                      {lang === 'uz' ? "O'zbekcha" : lang === 'en' ? 'English' : 'Русский'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.settingItem}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>{t.profile.theme}</Text>
+              <View style={styles.themeSelector}>
+                <TouchableOpacity
+                  style={[
+                    styles.themeButton,
+                    { backgroundColor: colors.background, borderColor: colors.border },
+                    activeTheme === 'light' && { backgroundColor: colors.primary, borderColor: colors.primary }
+                  ]}
+                  onPress={() => setThemeMode('light')}
+                >
+                  <MaterialIcons name="light-mode" size={20} color={activeTheme === 'light' ? '#FFFFFF' : colors.text} />
+                  <Text style={[
+                    styles.themeButtonText,
+                    { color: colors.text },
+                    activeTheme === 'light' && { color: '#FFFFFF' }
+                  ]}>
+                    {t.profile.lightMode}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.themeButton,
+                    { backgroundColor: colors.background, borderColor: colors.border },
+                    activeTheme === 'dark' && { backgroundColor: colors.primary, borderColor: colors.primary }
+                  ]}
+                  onPress={() => setThemeMode('dark')}
+                >
+                  <MaterialIcons name="dark-mode" size={20} color={activeTheme === 'dark' ? '#FFFFFF' : colors.text} />
+                  <Text style={[
+                    styles.themeButtonText,
+                    { color: colors.text },
+                    activeTheme === 'dark' && { color: '#FFFFFF' }
+                  ]}>
+                    {t.profile.darkMode}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mening e'lonlarim</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.profile.myPosts}</Text>
           {myPosts.length === 0 ? (
             <View style={styles.emptyContainer}>
               <MaterialIcons name="inbox" size={48} color={colors.textSecondary} />
-              <Text style={styles.emptyText}>Hozircha e'lonlaringiz yo'q</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t.profile.noPosts}</Text>
             </View>
           ) : (
             myPosts.map(post => (
               <View key={post.id} style={styles.myPostCard}>
                 <PostCard post={post} />
                 <TouchableOpacity
-                  style={styles.deleteButton}
+                  style={[styles.deleteButton, { backgroundColor: colors.error }]}
                   onPress={() => handleDeletePost(post.id)}
                 >
-                  <MaterialIcons name="delete" size={20} color={colors.white} />
-                  <Text style={styles.deleteButtonText}>O'chirish</Text>
+                  <MaterialIcons name="delete" size={20} color="#FFFFFF" />
+                  <Text style={styles.deleteButtonText}>{t.delete}</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -278,14 +367,14 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Yordam</Text>
-          <TouchableOpacity style={styles.helpCard} onPress={handleHelpContact}>
-            <View style={styles.helpIconContainer}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.profile.helpSupport}</Text>
+          <TouchableOpacity style={[styles.helpCard, { backgroundColor: colors.surface }]} onPress={handleHelpContact}>
+            <View style={[styles.helpIconContainer, { backgroundColor: colors.primary + '20' }]}>
               <MaterialIcons name="support-agent" size={32} color={colors.primary} />
             </View>
             <View style={styles.helpContent}>
-              <Text style={styles.helpTitle}>Yordam xizmati</Text>
-              <Text style={styles.helpPhone}>+998 50 101 76 95</Text>
+              <Text style={[styles.helpTitle, { color: colors.text }]}>{t.profile.helpSupport}</Text>
+              <Text style={[styles.helpPhone, { color: colors.primary }]}>+998 50 101 76 95</Text>
             </View>
             <MaterialIcons name="phone" size={24} color={colors.primary} />
           </TouchableOpacity>
@@ -298,20 +387,18 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   headerTitle: {
-    fontSize: typography.xxl,
-    fontWeight: typography.bold,
-    color: colors.white,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -320,201 +407,231 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: 32,
   },
   notLoggedInText: {
-    fontSize: typography.lg,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
+    fontSize: 18,
+    marginTop: 16,
+    marginBottom: 24,
   },
   loginButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
   },
   loginButtonText: {
-    color: colors.white,
-    fontSize: typography.base,
-    fontWeight: typography.semibold,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   profileCard: {
-    backgroundColor: colors.surface,
-    margin: spacing.md,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
+    margin: 16,
+    padding: 24,
+    borderRadius: 16,
     alignItems: 'center',
-    ...shadows.md,
   },
   avatarContainer: {
     width: 96,
     height: 96,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary + '20',
+    borderRadius: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 16,
     position: 'relative',
     overflow: 'hidden',
     borderWidth: 3,
-    borderColor: colors.primary,
   },
   avatarImage: {
     width: '100%',
     height: '100%',
-    borderRadius: borderRadius.full,
+    borderRadius: 48,
   },
   avatarEditBadge: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: colors.primary,
     width: 28,
     height: 28,
-    borderRadius: borderRadius.full,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: colors.white,
+    borderColor: '#FFFFFF',
   },
   profileInfo: {
     alignItems: 'center',
   },
   username: {
-    fontSize: typography.xl,
-    fontWeight: typography.bold,
-    color: colors.text,
-    marginBottom: spacing.xs,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   usernameInput: {
-    fontSize: typography.xl,
-    fontWeight: typography.bold,
-    color: colors.text,
+    fontSize: 20,
+    fontWeight: 'bold',
     borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    marginBottom: spacing.xs,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginBottom: 4,
     textAlign: 'center',
   },
   editActions: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+    gap: 8,
+    marginTop: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    gap: spacing.xs,
-  },
-  editButton: {
-    backgroundColor: colors.primary,
-    marginTop: spacing.md,
-  },
-  saveButton: {
-    backgroundColor: colors.success,
-  },
-  cancelButton: {
-    backgroundColor: colors.textSecondary,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 4,
   },
   actionButtonText: {
-    color: colors.white,
-    fontSize: typography.sm,
-    fontWeight: typography.semibold,
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   email: {
-    fontSize: typography.base,
-    color: colors.textSecondary,
+    fontSize: 16,
   },
   section: {
-    marginTop: spacing.md,
+    marginTop: 16,
   },
   sectionTitle: {
-    fontSize: typography.xl,
-    fontWeight: typography.bold,
-    color: colors.text,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   emptyContainer: {
-    paddingVertical: spacing.xl,
+    paddingVertical: 32,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: typography.base,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
+    fontSize: 16,
+    marginTop: 8,
   },
   myPostCard: {
     position: 'relative',
   },
   deleteButton: {
     position: 'absolute',
-    top: spacing.md,
-    right: spacing.lg,
+    top: 16,
+    right: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.error,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    gap: spacing.xs,
-    ...shadows.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 4,
   },
   deleteButtonText: {
-    color: colors.white,
-    fontSize: typography.sm,
-    fontWeight: typography.medium,
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
   },
   helpCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    marginHorizontal: spacing.md,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    ...shadows.md,
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 16,
   },
   helpIconContainer: {
     width: 56,
     height: 56,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary + '20',
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: spacing.md,
+    marginRight: 16,
   },
   helpContent: {
     flex: 1,
   },
   helpTitle: {
-    fontSize: typography.base,
-    fontWeight: typography.semibold,
-    color: colors.text,
-    marginBottom: spacing.xs,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   helpPhone: {
-    fontSize: typography.lg,
-    fontWeight: typography.bold,
-    color: colors.primary,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   adminButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    marginTop: spacing.md,
-    gap: spacing.sm,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 8,
   },
   adminButtonText: {
-    color: colors.white,
-    fontSize: typography.base,
-    fontWeight: typography.semibold,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  settingsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 16,
+  },
+  settingsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  settingsContent: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    padding: 16,
+    borderRadius: 16,
+    gap: 20,
+  },
+  settingItem: {
+    gap: 12,
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  languageButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 2,
+  },
+  languageButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  themeSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  themeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 2,
+    gap: 6,
+  },
+  themeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
