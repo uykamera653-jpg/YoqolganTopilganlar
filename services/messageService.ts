@@ -42,7 +42,51 @@ export const messageService = {
       .select()
       .single();
 
+    // Send push notification
+    if (data && !error) {
+      try {
+        // Get sender info
+        const { data: senderProfile } = await supabase
+          .from('user_profiles')
+          .select('username')
+          .eq('id', senderId)
+          .single();
+
+        const senderUsername = senderProfile?.username || 'Someone';
+
+        // Call edge function to send notification
+        const { error: notifError } = await supabase.functions.invoke('send-notification', {
+          body: {
+            receiverId,
+            title: `New message from ${senderUsername}`,
+            body: message.substring(0, 100), // Limit to 100 chars
+            data: {
+              userId: senderId,
+              username: senderUsername,
+              type: 'message',
+            },
+          },
+        });
+
+        if (notifError) {
+          console.log('Error sending push notification:', notifError);
+        }
+      } catch (notifError) {
+        console.log('Error in notification flow:', notifError);
+      }
+    }
+
     return { data, error };
+  },
+
+  // Save push token to profile
+  async savePushToken(userId: string, pushToken: string) {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ push_token: pushToken })
+      .eq('id', userId);
+
+    return { error };
   },
 
   // Get messages between two users

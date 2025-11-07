@@ -3,6 +3,7 @@ import { AuthProvider, AlertProvider } from '@/template';
 import { PostsProvider } from '@/contexts/PostsContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 export default function RootLayout() {
   return (
@@ -10,7 +11,8 @@ export default function RootLayout() {
       <LanguageProvider>
         <AlertProvider>
           <AuthProvider>
-            <PostsProvider>
+            <NotificationProvider>
+              <PostsProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -71,7 +73,8 @@ export default function RootLayout() {
               }} 
             />
           </Stack>
-            </PostsProvider>
+              </PostsProvider>
+            </NotificationProvider>
           </AuthProvider>
         </AlertProvider>
       </LanguageProvider>
