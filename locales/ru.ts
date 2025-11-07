@@ -117,6 +117,18 @@ export default {
     chatWith: 'Чат с',
   },
   
+  // Send Message
+  sendMessage: {
+    title: 'Отправить сообщение',
+    to: 'Отправить сообщение',
+    placeholder: 'Введите ваше сообщение здесь...',
+    sendButton: 'Отправить сообщение',
+    sending: 'Отправка...',
+    sent: 'Сообщение отправлено',
+    error: 'Ошибка отправки сообщения',
+    emptyError: 'Сообщение не может быть пустым',
+  },
+  
   // Profile
   profile: {
     title: 'Профиль',

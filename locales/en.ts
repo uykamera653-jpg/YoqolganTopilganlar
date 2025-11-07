@@ -117,6 +117,18 @@ export default {
     chatWith: 'Chat with',
   },
   
+  // Send Message
+  sendMessage: {
+    title: 'Send Message',
+    to: 'Send message to',
+    placeholder: 'Type your message here...',
+    sendButton: 'Send Message',
+    sending: 'Sending...',
+    sent: 'Message sent',
+    error: 'Error sending message',
+    emptyError: 'Message cannot be empty',
+  },
+  
   // Profile
   profile: {
     title: 'Profile',

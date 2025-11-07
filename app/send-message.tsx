@@ -17,6 +17,7 @@ import { spacing } from '@/constants/theme';
 import { messageService } from '@/services/messageService';
 import { useAuth, useAlert } from '@/template';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SendMessageScreen() {
   const insets = useSafeAreaInsets();
@@ -25,12 +26,13 @@ export default function SendMessageScreen() {
   const { user } = useAuth();
   const { showAlert } = useAlert();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
     if (!message.trim() || !userId || !user) {
-      showAlert('Xatolik', 'Xabar bo\'sh bo\'lmasligi kerak');
+      showAlert(t.error, t.sendMessage.emptyError);
       return;
     }
 
@@ -39,9 +41,9 @@ export default function SendMessageScreen() {
     setSending(false);
 
     if (error) {
-      showAlert('Xatolik', 'Xabar yuborishda xatolik yuz berdi');
+      showAlert(t.error, t.sendMessage.error);
     } else {
-      showAlert('Muvaffaqiyatli', 'Xabar yuborildi');
+      showAlert(t.success, t.sendMessage.sent);
       router.back();
     }
   };
@@ -54,11 +56,10 @@ export default function SendMessageScreen() {
     >
       <Stack.Screen
         options={{
-          headerTitle: username ? `Send message to ${username}` : 'Send message',
-          headerBackTitleVisible: false,
-          headerTintColor: colors.text,
+          title: username ? `${t.sendMessage.to} ${username}` : t.sendMessage.title,
+          headerTintColor: '#FFFFFF',
           headerStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: colors.primary,
           },
         }}
       />
@@ -70,7 +71,7 @@ export default function SendMessageScreen() {
 
         <TextInput
           style={[styles.input, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
-          placeholder="Type your message here..."
+          placeholder={t.sendMessage.placeholder}
           placeholderTextColor={colors.textSecondary}
           multiline
           value={message}
@@ -94,7 +95,7 @@ export default function SendMessageScreen() {
           ) : (
             <>
               <MaterialIcons name="send" size={24} color="#FFFFFF" />
-              <Text style={styles.sendButtonText}>Send Message</Text>
+              <Text style={styles.sendButtonText}>{t.sendMessage.sendButton}</Text>
             </>
           )}
         </TouchableOpacity>

@@ -117,6 +117,18 @@ export default {
     chatWith: 'bilan suhbat',
   },
   
+  // Send Message
+  sendMessage: {
+    title: 'Xabar yuborish',
+    to: 'ga xabar yuborish',
+    placeholder: 'Xabaringizni shu yerga yozing...',
+    sendButton: 'Xabar yuborish',
+    sending: 'Yuborilmoqda...',
+    sent: 'Xabar yuborildi',
+    error: 'Xabar yuborishda xatolik',
+    emptyError: 'Xabar bo\'sh bo\'lmasligi kerak',
+  },
+  
   // Profile
   profile: {
     title: 'Profil',
