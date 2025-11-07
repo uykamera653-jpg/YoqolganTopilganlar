@@ -84,9 +84,14 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
-        <View style={[styles.mottoContainer, { backgroundColor: colors.surface }]}>
-          <MaterialIcons name="verified" size={32} color={colors.primary} />
-          <Text style={[styles.mottoText, { color: colors.text }]}>{t.home.featured}</Text>
+        <View style={[styles.bannerContainer, { backgroundColor: colors.surface }]}>
+          <View style={[styles.bannerIconBg, { backgroundColor: colors.primary + '20' }]}>
+            <MaterialIcons name="verified" size={40} color={colors.primary} />
+          </View>
+          <View style={styles.bannerContent}>
+            <Text style={[styles.bannerTitle, { color: colors.text }]}>{t.home.featured}</Text>
+            <Text style={[styles.bannerSubtitle, { color: colors.textSecondary }]}>FINDO - {t.appTagline}</Text>
+          </View>
         </View>
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.home.categories}</Text>
@@ -191,22 +196,36 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     marginBottom: spacing.md,
   },
-  mottoContainer: {
+  bannerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    ...shadows.sm,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.xl,
+    ...shadows.md,
   },
-  mottoText: {
-    fontSize: typography.lg,
+  bannerIconBg: {
+    width: 70,
+    height: 70,
+    borderRadius: borderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  bannerContent: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: typography.xl,
     fontWeight: typography.bold,
-    marginLeft: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  bannerSubtitle: {
+    fontSize: typography.sm,
+    lineHeight: 18,
   },
   categoriesRow: {
     flexDirection: 'row',

@@ -273,9 +273,19 @@ For questions or issues:
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <Text style={[styles.text, { color: colors.text }]}>
-          {termsContent[language]}
-        </Text>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
+            <MaterialIcons name="gavel" size={48} color={colors.primary} />
+          </View>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>{t.terms.title}</Text>
+          <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>{t.terms.description}</Text>
+        </View>
+        
+        <View style={[styles.contentCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.text, { color: colors.text }]}>
+            {termsContent[language]}
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -304,6 +314,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  card: {
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  contentCard: {
+    borderRadius: 16,
     padding: 20,
   },
   text: {
