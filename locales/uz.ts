@@ -27,10 +27,12 @@ export default {
     otpSent: 'Tasdiqlash kodi emailingizga yuborildi',
     verifyAndRegister: 'Tasdiqlash va ro\'yxatdan o\'tish',
     termsAgree: 'Men maxfiylik siyosati va foydalanish shartlarini qabul qilaman',
-    termsRequired: 'Shartlarni qabul qilishingiz kerak',
+    termsRequired: 'Maxfiylik siyosati va foydalanish shartlarini qabul qilishingiz shart',
     privacyPolicy: 'Maxfiylik siyosati',
     termsOfService: 'Foydalanish shartlari',
     and: 'va',
+    privacyInfo: 'Ma\'lumotlaringiz xavfsizligi uchun',
+    privacyDescription: 'Biz sizning ma\'lumotlaringizni himoya qilish uchun eng so\'nggi texnologiyalardan foydalanamiz. Hech kim sizdan shaxsiy ma\'lumotlaringizni so\'ramaydi. Barcha ma\'lumotlar xavfsiz serverlarimizda saqlanadi.',
   },
   
   // Tabs

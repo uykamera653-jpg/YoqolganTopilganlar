@@ -1,6 +1,7 @@
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface CategoryButtonProps {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -10,19 +11,24 @@ interface CategoryButtonProps {
 }
 
 export function CategoryButton({ icon, label, color, onPress }: CategoryButtonProps) {
+  const { colors } = useTheme();
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={[styles.container, { backgroundColor: colors.surface }]} 
+      onPress={onPress} 
+      activeOpacity={0.7}
+    >
       <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
         <MaterialIcons name={icon} size={28} color={color} />
       </View>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
@@ -43,7 +49,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.base,
     fontWeight: typography.semibold,
-    color: colors.text,
     flex: 1,
   },
 });

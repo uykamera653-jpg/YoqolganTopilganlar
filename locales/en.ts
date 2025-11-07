@@ -27,10 +27,12 @@ export default {
     otpSent: 'Verification code sent to your email',
     verifyAndRegister: 'Verify and Register',
     termsAgree: 'I agree to the Privacy Policy and Terms of Service',
-    termsRequired: 'You must agree to the terms',
+    termsRequired: 'You must agree to the Privacy Policy and Terms of Service',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
     and: 'and',
+    privacyInfo: 'Your Data Security',
+    privacyDescription: 'We use the latest technology to protect your data. No one will ask for your personal information. All data is stored on our secure servers.',
   },
   
   // Tabs

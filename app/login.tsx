@@ -171,6 +171,19 @@ export default function LoginScreen() {
                 placeholderTextColor={colors.textSecondary}
                 secureTextEntry
               />
+
+              <View style={[styles.privacyInfoBox, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
+                <MaterialIcons name="security" size={24} color={colors.primary} />
+                <View style={styles.privacyInfoContent}>
+                  <Text style={[styles.privacyInfoTitle, { color: colors.primary }]}>
+                    {t.auth.privacyInfo}
+                  </Text>
+                  <Text style={[styles.privacyInfoText, { color: colors.text }]}>
+                    {t.auth.privacyDescription}
+                  </Text>
+                </View>
+              </View>
+
               <TouchableOpacity
                 style={styles.termsContainer}
                 onPress={() => setTermsAccepted(!termsAccepted)}
@@ -325,6 +338,27 @@ const styles = StyleSheet.create({
   termsLink: {
     textDecorationLine: 'underline',
     fontWeight: '600',
+  },
+  privacyInfoBox: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+    gap: 12,
+  },
+  privacyInfoContent: {
+    flex: 1,
+    gap: 4,
+  },
+  privacyInfoTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  privacyInfoText: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   otpInfo: {
     fontSize: 14,
