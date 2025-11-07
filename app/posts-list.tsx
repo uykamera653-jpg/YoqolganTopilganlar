@@ -70,7 +70,7 @@ export default function PostsListScreen() {
           headerTintColor: colors.white,
         }}
       />
-      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingBottom: insets.bottom }]}>
         {loading && filteredPosts.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.semibold,
   },
   listContent: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
   },
 });

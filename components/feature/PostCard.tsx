@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: borderRadius.lg,
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     overflow: 'hidden',
     ...shadows.md,
   },
