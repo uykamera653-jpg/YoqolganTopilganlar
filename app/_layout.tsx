@@ -1,12 +1,16 @@
 import { Stack } from 'expo-router';
 import { AuthProvider, AlertProvider } from '@/template';
 import { PostsProvider } from '@/contexts/PostsContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 export default function RootLayout() {
   return (
-    <AlertProvider>
-      <AuthProvider>
-        <PostsProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AlertProvider>
+          <AuthProvider>
+            <PostsProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -54,9 +58,23 @@ export default function RootLayout() {
                 headerTintColor: '#fff',
               }} 
             />
+            <Stack.Screen 
+              name="privacy-policy" 
+              options={{ 
+                headerShown: false,
+              }} 
+            />
+            <Stack.Screen 
+              name="terms-of-service" 
+              options={{ 
+                headerShown: false,
+              }} 
+            />
           </Stack>
-        </PostsProvider>
-      </AuthProvider>
-    </AlertProvider>
+            </PostsProvider>
+          </AuthProvider>
+        </AlertProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
