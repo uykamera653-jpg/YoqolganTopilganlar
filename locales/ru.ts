@@ -115,9 +115,6 @@ export default {
     startConversation: 'Отправьте кому-нибудь сообщение, чтобы начать беседу',
     typeMessage: 'Написать сообщение...',
     chatWith: 'Чат с',
-    newMessage: 'Новое сообщение',
-    oneNewMessage: 'У вас новое сообщение',
-    justNow: 'Только что',
   },
   
   // Profile

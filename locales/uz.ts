@@ -115,9 +115,6 @@ export default {
     startConversation: 'Suhbat boshlash uchun biror kishiga xabar yuboring',
     typeMessage: 'Xabar yozish...',
     chatWith: 'bilan suhbat',
-    newMessage: 'Yangi xabar',
-    oneNewMessage: 'Sizga yangi xabar keldi',
-    justNow: 'Hozir',
   },
   
   // Profile

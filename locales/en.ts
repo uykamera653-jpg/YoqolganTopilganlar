@@ -115,9 +115,6 @@ export default {
     startConversation: 'Send a message to someone to start a conversation',
     typeMessage: 'Type a message...',
     chatWith: 'Chat with',
-    newMessage: 'New message',
-    oneNewMessage: 'You have a new message',
-    justNow: 'Just now',
   },
   
   // Profile
