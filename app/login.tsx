@@ -8,13 +8,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { spacing, typography, borderRadius } from '@/constants/theme';
 
+type Language = 'uz' | 'en' | 'ru';
+
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { sendOTP, verifyOTPAndLogin, signInWithPassword, signUpWithPassword, operationLoading } = useAuth();
   const { showAlert } = useAlert();
   const router = useRouter();
 
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const { colors } = useTheme();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -122,6 +124,28 @@ export default function LoginScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.languageSelector}>
+          {(['uz', 'en', 'ru'] as Language[]).map((lang) => (
+            <TouchableOpacity
+              key={lang}
+              style={[
+                styles.languageButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                language === lang && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
+              onPress={() => setLanguage(lang)}
+            >
+              <Text style={[
+                styles.languageButtonText,
+                { color: colors.text },
+                language === lang && { color: '#FFFFFF' }
+              ]}>
+                {lang === 'uz' ? 'UZ' : lang === 'en' ? 'EN' : 'RU'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <View style={styles.header}>
           <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
             <MaterialIcons name="search" size={48} color={colors.white} />
@@ -282,7 +306,14 @@ export default function LoginScreen() {
           {mode === 'login' && (
             <TouchableOpacity
               style={styles.forgotPasswordButton}
-              onPress={() => router.push('/reset-password')}
+              onPress={() => {
+                try {
+                  router.push('/reset-password');
+                } catch (error) {
+                  console.error('Navigation error:', error);
+                  showAlert(t.error, 'Navigation error');
+                }
+              }}
             >
               <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>{t.auth.forgotPassword}</Text>
             </TouchableOpacity>
@@ -423,5 +454,24 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  languageButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  languageButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
