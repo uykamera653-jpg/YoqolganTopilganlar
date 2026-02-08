@@ -211,7 +211,6 @@ export default function AddPostScreen() {
                 setShowRegionSuggestions(text.length > 0);
               }}
               onFocus={() => setShowRegionSuggestions(region.length > 0)}
-              onBlur={() => setTimeout(() => setShowRegionSuggestions(false), 200)}
               placeholder={t.postForm.regionPlaceholder}
               placeholderTextColor={colors.textSecondary}
             />
@@ -223,11 +222,12 @@ export default function AddPostScreen() {
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
-                      onPress={() => {
+                      onPressIn={() => {
                         setRegion(item.label);
                         setShowRegionSuggestions(false);
                       }}
                     >
+                      <MaterialIcons name="location-city" size={18} color={colors.textSecondary} />
                       <Text style={[styles.suggestionText, { color: colors.text }]}>{item.label}</Text>
                     </TouchableOpacity>
                   )}
@@ -390,18 +390,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     maxHeight: 200,
-    borderWidth: 1,
+    borderWidth: 2,
     borderTopWidth: 0,
     borderBottomLeftRadius: borderRadius.md,
     borderBottomRightRadius: borderRadius.md,
     zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
   },
   suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
+    gap: spacing.sm,
   },
   suggestionText: {
     fontSize: typography.base,
+    flex: 1,
   },
 });
