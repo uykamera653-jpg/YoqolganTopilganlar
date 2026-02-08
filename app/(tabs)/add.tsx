@@ -54,7 +54,7 @@ export default function AddPostScreen() {
     if (!region.trim()) return regions;
     const searchText = region.toLowerCase();
     return regions.filter(r => r.label.toLowerCase().includes(searchText));
-  }, [region, regions]);
+  }, [region]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -211,23 +211,28 @@ export default function AddPostScreen() {
                 setShowRegionSuggestions(text.length > 0);
               }}
               onFocus={() => setShowRegionSuggestions(region.length > 0)}
+              onBlur={() => {
+                setTimeout(() => setShowRegionSuggestions(false), 200);
+              }}
               placeholder={t.postForm.regionPlaceholder}
               placeholderTextColor={colors.textSecondary}
             />
             {showRegionSuggestions && filteredRegions.length > 0 && (
-              <View style={[styles.suggestionsContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.suggestionsContainer, { backgroundColor: colors.background, borderColor: colors.primary }]}>
                 <FlatList
                   data={filteredRegions}
                   keyExtractor={(item) => item.key}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
-                      onPressIn={() => {
+                      onPress={() => {
                         setRegion(item.label);
                         setShowRegionSuggestions(false);
                       }}
                     >
-                      <MaterialIcons name="location-city" size={18} color={colors.textSecondary} />
+                      <View style={[styles.suggestionIcon, { backgroundColor: colors.primary + '15' }]}>
+                        <MaterialIcons name="location-city" size={18} color={colors.primary} />
+                      </View>
                       <Text style={[styles.suggestionText, { color: colors.text }]}>{item.label}</Text>
                     </TouchableOpacity>
                   )}
@@ -390,16 +395,16 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     maxHeight: 200,
-    borderWidth: 2,
+    borderWidth: 3,
     borderTopWidth: 0,
     borderBottomLeftRadius: borderRadius.md,
     borderBottomRightRadius: borderRadius.md,
     zIndex: 1000,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 12,
   },
   suggestionItem: {
     flexDirection: 'row',
@@ -409,8 +414,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: spacing.sm,
   },
+  suggestionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   suggestionText: {
     fontSize: typography.base,
+    fontWeight: typography.medium,
     flex: 1,
   },
 });

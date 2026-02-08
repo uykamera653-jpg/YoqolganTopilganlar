@@ -171,9 +171,23 @@ export default function PostsListScreen() {
             <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
               <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>{t.regions.title}</Text>
-                <TouchableOpacity onPress={() => setShowRegionFilter(false)}>
-                  <MaterialIcons name="close" size={24} color={colors.textSecondary} />
-                </TouchableOpacity>
+                <View style={styles.headerActions}>
+                  <TouchableOpacity
+                    style={[styles.searchButton, { backgroundColor: colors.primary }]}
+                    onPress={() => {
+                      setManualRegionInput(regionSearchText);
+                      setSelectedRegion('');
+                      setShowRegionFilter(false);
+                      setRegionSearchText('');
+                    }}
+                  >
+                    <MaterialIcons name="search" size={20} color={staticColors.white} />
+                    <Text style={[styles.searchButtonText, { color: staticColors.white }]}>Qidirish</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setShowRegionFilter(false)}>
+                    <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                </View>
               </View>
               <View style={styles.searchContainer}>
                 <View style={styles.searchInputWrapper}>
@@ -295,6 +309,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderBottomWidth: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  searchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    gap: spacing.xs,
+  },
+  searchButtonText: {
+    fontSize: typography.sm,
+    fontWeight: typography.semibold,
   },
   searchContainer: {
     padding: spacing.md,
