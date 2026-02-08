@@ -69,6 +69,8 @@ export default function ProfileScreen() {
         onPress: async () => {
           const { success, error } = await deletePost(postId);
           if (success) {
+            // Post successfully deleted from database
+            // PostsContext will automatically update and remove from UI
             showAlert(t.success, t.postDetail.postDeleted);
           } else {
             showAlert(t.error, error || t.errors.generic);

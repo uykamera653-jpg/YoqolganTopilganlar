@@ -71,9 +71,18 @@ export default function LoginScreen() {
       return;
     }
 
-    const { error } = await verifyOTPAndLogin(email, otp, { password });
+    const { error, user } = await verifyOTPAndLogin(email, otp, { password });
     if (error) {
-      showAlert(t.error, error);
+      // Check for duplicate email error
+      let errorMessage = error;
+      
+      if (error.toLowerCase().includes('already') || error.toLowerCase().includes('exist')) {
+        errorMessage = 'Bu email allaqachon ro\'yxatdan o\'tgan. Iltimos, kirish qismidan foydalaning.';
+      } else if (error.toLowerCase().includes('invalid') || error.toLowerCase().includes('otp')) {
+        errorMessage = 'Tasdiqlash kodi noto\'g\'ri. Iltimos, qaytadan urinib ko\'ring.';
+      }
+      
+      showAlert(t.error, errorMessage);
     } else {
       showAlert(t.success, t.success);
       router.replace('/(tabs)');
@@ -86,9 +95,18 @@ export default function LoginScreen() {
       return;
     }
 
-    const { error } = await signInWithPassword(email, password);
+    const { error, user } = await signInWithPassword(email, password);
     if (error) {
-      showAlert(t.error, error);
+      // Check for specific error types
+      let errorMessage = error;
+      
+      if (error.toLowerCase().includes('invalid') || error.toLowerCase().includes('credentials')) {
+        errorMessage = 'Email yoki parol noto\'g\'ri. Iltimos, qaytadan urinib ko\'ring.';
+      } else if (error.toLowerCase().includes('not found') || error.toLowerCase().includes('user')) {
+        errorMessage = 'Bu email bilan ro\'yxatdan o\'tilmagan.';
+      }
+      
+      showAlert(t.error, errorMessage);
     } else {
       router.replace('/(tabs)');
     }
@@ -260,6 +278,15 @@ export default function LoginScreen() {
               <Text style={[styles.resendButtonText, { color: colors.primary }]}>{t.auth.otpSent}</Text>
             </TouchableOpacity>
           )}
+
+          {mode === 'login' && (
+            <TouchableOpacity
+              style={styles.forgotPasswordButton}
+              onPress={() => router.push('/reset-password')}
+            >
+              <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>{t.auth.forgotPassword}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -388,5 +415,13 @@ const styles = StyleSheet.create({
   resendButtonText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  forgotPasswordButton: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  forgotPasswordText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
