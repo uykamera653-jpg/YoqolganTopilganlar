@@ -256,9 +256,9 @@ export default function LoginScreen() {
           )}
 
           <TouchableOpacity
-            style={[styles.submitButton, { backgroundColor: colors.primary }, operationLoading && styles.submitButtonDisabled]}
+            style={[styles.submitButton, { backgroundColor: colors.primary }, (operationLoading || (mode === 'register' && !termsAccepted)) && styles.submitButtonDisabled]}
             onPress={mode === 'login' ? handleLogin : handleRegister}
-            disabled={operationLoading}
+            disabled={operationLoading || (mode === 'register' && !termsAccepted)}
           >
             {operationLoading ? (
               <ActivityIndicator color="#FFFFFF" />
