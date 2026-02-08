@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useAdmin } from '@/hooks/useAdmin';
 import { usePosts } from '@/hooks/usePosts';
 import { useRouter } from 'expo-router';
 import { PostCard } from '@/components';
 import { useAlert } from '@/template';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AdminScreen() {
   const insets = useSafeAreaInsets();
@@ -15,6 +16,7 @@ export default function AdminScreen() {
   const { isAdmin, stats, users, loading, loadStats, loadUsers } = useAdmin();
   const { posts, refreshPosts } = usePosts();
   const { showAlert } = useAlert();
+  const { colors } = useTheme();
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
