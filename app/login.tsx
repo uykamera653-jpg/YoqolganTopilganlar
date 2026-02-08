@@ -306,10 +306,7 @@ export default function LoginScreen() {
           {mode === 'login' && (
             <TouchableOpacity
               style={styles.forgotPasswordButton}
-              onPress={() => {
-                console.log('Forgot password pressed');
-                router.push('reset-password' as any);
-              }}
+              onPress={() => router.push('/reset-password')}
             >
               <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>{t.auth.forgotPassword}</Text>
             </TouchableOpacity>
