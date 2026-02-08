@@ -41,7 +41,7 @@ export default function ResetPasswordScreen() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'findo://reset-password?mode=update',
+        redirectTo: 'onspaceapp://reset-password?mode=update',
       });
 
       if (error) throw error;
