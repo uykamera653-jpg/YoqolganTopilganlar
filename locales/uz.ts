@@ -55,12 +55,32 @@ export default {
   
   // Post Types
   postTypes: {
-    found: 'Topdim',
-    lost: 'Yo\'qotdim',
-    foundItems: 'Topilgan buyumlar',
-    lostItems: 'Yo\'qolgan buyumlar',
+    found: 'Topilganlar',
+    lost: 'Yo\'qotilganlar',
+    foundItems: 'Topilganlar',
+    lostItems: 'Yo\'qotilganlar',
     rewardedItems: 'Mukofotli e\'lonlar',
     allPosts: 'Barcha e\'lonlar',
+  },
+  
+  // Regions
+  regions: {
+    title: 'Viloyat',
+    all: 'Barcha viloyatlar',
+    tashkent_city: 'Toshkent shahri',
+    tashkent: 'Toshkent viloyati',
+    andijan: 'Andijon',
+    bukhara: 'Buxoro',
+    fergana: 'Farg\'ona',
+    jizzakh: 'Jizzax',
+    namangan: 'Namangan',
+    navoi: 'Navoiy',
+    kashkadarya: 'Qashqadaryo',
+    karakalpakstan: 'Qoraqalpog\'iston',
+    samarkand: 'Samarqand',
+    sirdarya: 'Sirdaryo',
+    surkhandarya: 'Surxondaryo',
+    khorezm: 'Xorazm',
   },
   
   // Post Form
@@ -73,6 +93,8 @@ export default {
     itemTitlePlaceholder: 'Masalan: Qora telefon',
     description: 'Tavsif',
     descriptionPlaceholder: 'Batafsil ma\'lumot bering',
+    region: 'Viloyat *',
+    regionPlaceholder: 'Viloyatni tanlang',
     location: 'Qayerda?',
     locationPlaceholder: 'Masalan: Amir Temur ko\'chasi',
     contact: 'Aloqa uchun',

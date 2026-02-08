@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,12 +24,31 @@ export default function AddPostScreen() {
   const [type, setType] = useState<'found' | 'lost'>('found');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [region, setRegion] = useState('');
   const [location, setLocation] = useState('');
   const [contact, setContact] = useState('');
   const [reward, setReward] = useState('');
   const [dateOccurred, setDateOccurred] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showRegionPicker, setShowRegionPicker] = useState(false);
+
+  const regions = [
+    { key: 'tashkent_city', label: t.regions.tashkent_city },
+    { key: 'tashkent', label: t.regions.tashkent },
+    { key: 'andijan', label: t.regions.andijan },
+    { key: 'bukhara', label: t.regions.bukhara },
+    { key: 'fergana', label: t.regions.fergana },
+    { key: 'jizzakh', label: t.regions.jizzakh },
+    { key: 'namangan', label: t.regions.namangan },
+    { key: 'navoi', label: t.regions.navoi },
+    { key: 'kashkadarya', label: t.regions.kashkadarya },
+    { key: 'karakalpakstan', label: t.regions.karakalpakstan },
+    { key: 'samarkand', label: t.regions.samarkand },
+    { key: 'sirdarya', label: t.regions.sirdarya },
+    { key: 'surkhandarya', label: t.regions.surkhandarya },
+    { key: 'khorezm', label: t.regions.khorezm },
+  ];
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -60,7 +79,7 @@ export default function AddPostScreen() {
       return;
     }
 
-    if (!title.trim() || !description.trim() || !location.trim() || !contact.trim()) {
+    if (!title.trim() || !description.trim() || !region.trim() || !location.trim() || !contact.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
       return;
     }
@@ -71,6 +90,7 @@ export default function AddPostScreen() {
       type,
       title: title.trim(),
       description: description.trim(),
+      region: region.trim(),
       location: location.trim(),
       contact: contact.trim(),
       image_url: imageUri || undefined,
@@ -86,6 +106,7 @@ export default function AddPostScreen() {
       showAlert(t.success, t.postForm.submit);
       setTitle('');
       setDescription('');
+      setRegion('');
       setLocation('');
       setContact('');
       setReward('');
@@ -174,6 +195,17 @@ export default function AddPostScreen() {
             numberOfLines={4}
           />
 
+          <Text style={[styles.label, { color: colors.text }]}>{t.postForm.region}</Text>
+          <TouchableOpacity
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => setShowRegionPicker(true)}
+          >
+            <Text style={[styles.regionText, { color: region ? colors.text : colors.textSecondary }]}>
+              {region || t.postForm.regionPlaceholder}
+            </Text>
+            <MaterialIcons name="arrow-drop-down" size={24} color={colors.textSecondary} />
+          </TouchableOpacity>
+
           <Text style={[styles.label, { color: colors.text }]}>{t.postForm.location} *</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
@@ -230,6 +262,47 @@ export default function AddPostScreen() {
             )}
           </TouchableOpacity>
         </ScrollView>
+
+        <Modal
+          visible={showRegionPicker}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowRegionPicker(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowRegionPicker(false)}
+          >
+            <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{t.postForm.region}</Text>
+                <TouchableOpacity onPress={() => setShowRegionPicker(false)}>
+                  <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.regionList} showsVerticalScrollIndicator={false}>
+                {regions.map((r) => (
+                  <TouchableOpacity
+                    key={r.key}
+                    style={[styles.regionItem, { borderBottomColor: colors.border }, region === r.label && { backgroundColor: colors.primary + '10' }]}
+                    onPress={() => {
+                      setRegion(r.label);
+                      setShowRegionPicker(false);
+                    }}
+                  >
+                    <Text style={[styles.regionItemText, { color: region === r.label ? colors.primary : colors.text }]}>
+                      {r.label}
+                    </Text>
+                    {region === r.label && (
+                      <MaterialIcons name="check" size={20} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </View>
     </KeyboardAvoidingView>
   );
@@ -319,5 +392,44 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: typography.lg,
     fontWeight: typography.semibold,
+  },
+  regionText: {
+    flex: 1,
+    fontSize: typography.base,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: typography.lg,
+    fontWeight: typography.semibold,
+  },
+  regionList: {
+    maxHeight: 400,
+  },
+  regionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+  },
+  regionItemText: {
+    fontSize: typography.base,
   },
 });

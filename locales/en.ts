@@ -55,12 +55,32 @@ export default {
   
   // Post Types
   postTypes: {
-    found: 'Found',
-    lost: 'Lost',
+    found: 'Found Items',
+    lost: 'Lost Items',
     foundItems: 'Found Items',
     lostItems: 'Lost Items',
     rewardedItems: 'Rewarded Posts',
     allPosts: 'All Posts',
+  },
+  
+  // Regions
+  regions: {
+    title: 'Region',
+    all: 'All Regions',
+    tashkent_city: 'Tashkent City',
+    tashkent: 'Tashkent Region',
+    andijan: 'Andijan',
+    bukhara: 'Bukhara',
+    fergana: 'Fergana',
+    jizzakh: 'Jizzakh',
+    namangan: 'Namangan',
+    navoi: 'Navoi',
+    kashkadarya: 'Kashkadarya',
+    karakalpakstan: 'Karakalpakstan',
+    samarkand: 'Samarkand',
+    sirdarya: 'Sirdarya',
+    surkhandarya: 'Surkhandarya',
+    khorezm: 'Khorezm',
   },
   
   // Post Form
@@ -73,6 +93,8 @@ export default {
     itemTitlePlaceholder: 'e.g., Black phone',
     description: 'Description',
     descriptionPlaceholder: 'Provide detailed information',
+    region: 'Region *',
+    regionPlaceholder: 'Select region',
     location: 'Where?',
     locationPlaceholder: 'e.g., Amir Temur Street',
     contact: 'Contact',

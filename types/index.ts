@@ -6,6 +6,7 @@ export interface Post {
   description: string;
   image_url?: string;
   location: string;
+  region?: string;
   contact: string;
   reward?: string;
   date_occurred?: string;
@@ -21,6 +22,7 @@ export interface PostFormData {
   title: string;
   description: string;
   location: string;
+  region?: string;
   contact: string;
   image_url?: string;
   reward?: string;

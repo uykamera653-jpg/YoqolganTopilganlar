@@ -142,6 +142,16 @@ export default function PostDetailScreen() {
             <Text style={[styles.description, { color: colors.textSecondary }]}>{post.description}</Text>
 
             <View style={[styles.infoSection, { backgroundColor: colors.surface }]}>
+              {post.region && (
+                <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
+                  <MaterialIcons name="location-city" size={24} color={staticColors.primary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Viloyat</Text>
+                    <Text style={[styles.infoValue, { color: colors.text }]}>{post.region}</Text>
+                  </View>
+                </View>
+              )}
+
               <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
                 <MaterialIcons name="location-on" size={24} color={staticColors.primary} />
                 <View style={styles.infoContent}>

@@ -55,12 +55,32 @@ export default {
   
   // Post Types
   postTypes: {
-    found: 'Нашел',
-    lost: 'Потерял',
-    foundItems: 'Найденные вещи',
-    lostItems: 'Потерянные вещи',
+    found: 'Найденные',
+    lost: 'Потерянные',
+    foundItems: 'Найденные',
+    lostItems: 'Потерянные',
     rewardedItems: 'Объявления с вознаграждением',
     allPosts: 'Все объявления',
+  },
+  
+  // Regions
+  regions: {
+    title: 'Область',
+    all: 'Все области',
+    tashkent_city: 'город Ташкент',
+    tashkent: 'Ташкентская область',
+    andijan: 'Андижан',
+    bukhara: 'Бухара',
+    fergana: 'Фергана',
+    jizzakh: 'Джизак',
+    namangan: 'Наманган',
+    navoi: 'Навои',
+    kashkadarya: 'Кашкадарья',
+    karakalpakstan: 'Каракалпакстан',
+    samarkand: 'Самарканд',
+    sirdarya: 'Сырдарья',
+    surkhandarya: 'Сурхандарья',
+    khorezm: 'Хорезм',
   },
   
   // Post Form
@@ -73,6 +93,8 @@ export default {
     itemTitlePlaceholder: 'Например: Черный телефон',
     description: 'Описание',
     descriptionPlaceholder: 'Укажите подробную информацию',
+    region: 'Область *',
+    regionPlaceholder: 'Выберите область',
     location: 'Где?',
     locationPlaceholder: 'Например: улица Амира Темура',
     contact: 'Контакт',

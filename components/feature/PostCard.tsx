@@ -97,9 +97,17 @@ export function PostCard({ post }: PostCardProps) {
         <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>{post.description}</Text>
 
         <View style={styles.footer}>
-          <View style={styles.locationRow}>
-            <MaterialIcons name="location-on" size={16} color={colors.textSecondary} />
-            <Text style={[styles.location, { color: colors.textSecondary }]} numberOfLines={1}>{post.location}</Text>
+          <View style={styles.leftFooter}>
+            {post.region && (
+              <View style={styles.regionRow}>
+                <MaterialIcons name="location-city" size={14} color={colors.textSecondary} />
+                <Text style={[styles.region, { color: colors.textSecondary }]} numberOfLines={1}>{post.region}</Text>
+              </View>
+            )}
+            <View style={styles.locationRow}>
+              <MaterialIcons name="location-on" size={16} color={colors.textSecondary} />
+              <Text style={[styles.location, { color: colors.textSecondary }]} numberOfLines={1}>{post.location}</Text>
+            </View>
           </View>
           <View style={styles.footerRight}>
             <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(post.created_at)}</Text>
@@ -180,7 +188,20 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  leftFooter: {
+    flex: 1,
+    marginRight: spacing.sm,
+    gap: spacing.xs,
+  },
+  regionRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+  },
+  region: {
+    fontSize: typography.xs,
+    marginLeft: spacing.xs,
   },
   footerRight: {
     flexDirection: 'row',
@@ -202,13 +223,10 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    marginRight: spacing.sm,
   },
   location: {
     fontSize: typography.sm,
     marginLeft: spacing.xs,
-    flex: 1,
   },
   date: {
     fontSize: typography.sm,

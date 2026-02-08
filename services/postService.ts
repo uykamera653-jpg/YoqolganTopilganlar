@@ -48,9 +48,23 @@ export const postService = {
         imageUrl = url || undefined;
       }
 
+      const insertData: any = {
+        type: postData.type,
+        title: postData.title,
+        description: postData.description,
+        location: postData.location,
+        region: postData.region,
+        contact: postData.contact,
+        image_url: imageUrl,
+        user_id: user.id,
+      };
+
+      if (postData.reward) insertData.reward = postData.reward;
+      if (postData.date_occurred) insertData.date_occurred = postData.date_occurred;
+
       const { data, error } = await supabase
         .from('posts')
-        .insert([{ ...postData, image_url: imageUrl, user_id: user.id }])
+        .insert([insertData])
         .select('*, user_profiles(username, avatar_url)')
         .single();
 
