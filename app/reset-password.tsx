@@ -25,6 +25,7 @@ export default function ResetPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleRequestReset = async () => {
+    console.log('handleRequestReset called');
     if (!email.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
       return;
@@ -33,19 +34,24 @@ export default function ResetPasswordScreen() {
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      showAlert(t.error, t.errors.invalidEmail);
+      showAlert(t.error, t.errors.invalidEmail || 'Email format noto\'g\'ri');
       return;
     }
 
     setLoading(true);
+    console.log('Sending password reset email to:', email);
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'onspaceapp://reset-password?mode=update',
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Reset password error:', error);
+        throw error;
+      }
 
+      console.log('Password reset email sent successfully');
       showAlert(
         t.success,
         t.resetPassword.linkSent,
@@ -57,7 +63,8 @@ export default function ResetPasswordScreen() {
         ]
       );
     } catch (error: any) {
-      showAlert(t.error, error.message || t.errors.generic);
+      console.error('handleRequestReset error:', error);
+      showAlert(t.error, error.message || t.errors.generic || 'Xatolik yuz berdi');
     } finally {
       setLoading(false);
     }
