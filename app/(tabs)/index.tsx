@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -19,6 +20,13 @@ export default function HomeScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { t, language } = useLanguage();
   const { colors } = useTheme();
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const slideTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const slides = [
+    t.home.adSlide1,
+    t.home.adSlide2,
+    t.home.adSlide3,
+  ];
 
   useEffect(() => {
     if (user) {
@@ -27,6 +35,19 @@ export default function HomeScreen() {
       setUserProfile(null);
     }
   }, [user]);
+
+  useEffect(() => {
+    // Auto-slide every 3 seconds
+    slideTimerRef.current = setInterval(() => {
+      setCurrentSlideIndex((prevIndex) => (prevIndex + 1) % slides.length);
+    }, 3000);
+
+    return () => {
+      if (slideTimerRef.current) {
+        clearInterval(slideTimerRef.current);
+      }
+    };
+  }, [slides.length]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -126,19 +147,29 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View style={[styles.mediaContainer, { backgroundColor: colors.surface }]}>
+        <TouchableOpacity 
+          style={[styles.mediaContainer, { backgroundColor: colors.surface }]}
+          onPress={() => {
+            Linking.openURL('https://t.me/Prostaffsam').catch(err => console.error('Error opening Telegram:', err));
+          }}
+          activeOpacity={0.8}
+        >
           <View style={styles.mediaPlaceholder}>
-            <MaterialIcons name="photo-library" size={48} color={colors.textSecondary} />
-            <Text style={[styles.mediaPlaceholderText, { color: colors.textSecondary }]}>
-              {language === 'uz' ? 'Reklama uchun joy' :
-               language === 'ru' ? 'Место для рекламы' :
-               'Advertisement Space'}
+            <MaterialIcons name="campaign" size={48} color={colors.primary} />
+            <Text style={[styles.adSlideText, { color: colors.text }]}>
+              {slides[currentSlideIndex]}
             </Text>
-            <Text style={[styles.mediaPlaceholderSubtext, { color: colors.textTertiary }]}>
-              {language === 'uz' ? 'Bu yerga rasm yoki video qo\'yishingiz mumkin' :
-               language === 'ru' ? 'Здесь вы можете разместить изображение или видео' :
-               'You can place images or videos here'}
-            </Text>
+            <View style={styles.slideIndicator}>
+              {slides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.slideIndicatorDot,
+                    { backgroundColor: index === currentSlideIndex ? colors.primary : colors.textTertiary }
+                  ]}
+                />
+              ))}
+            </View>
           </View>
           
           <View style={[styles.warningBanner, { backgroundColor: colors.warning + '15', borderColor: colors.warning }]}>
@@ -149,7 +180,7 @@ export default function HomeScreen() {
                'Do not share personal information in posts! Be careful when sharing phone numbers, addresses, and other confidential information.'}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -281,6 +312,24 @@ const styles = StyleSheet.create({
     fontSize: typography.sm,
     marginTop: spacing.xs,
     textAlign: 'center',
+  },
+  adSlideText: {
+    fontSize: typography.xl,
+    fontWeight: typography.bold,
+    marginTop: spacing.md,
+    textAlign: 'center',
+    paddingHorizontal: spacing.lg,
+    lineHeight: 28,
+  },
+  slideIndicator: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  slideIndicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   warningBanner: {
     flexDirection: 'row',

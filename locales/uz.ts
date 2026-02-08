@@ -52,6 +52,9 @@ export default {
     lost: 'Yo\'qotilganlar',
     reward: 'Mukofotli',
     all: 'Barchasi',
+    adSlide1: 'Bu yerda sizning reklamangiz bo\'lishi mumkin',
+    adSlide2: 'Aloqa uchun bosing',
+    adSlide3: 'Telegram: @Prostaffsam',
   },
   
   // Post Types

@@ -52,6 +52,9 @@ export default {
     lost: 'Lost Items',
     reward: 'Rewarded',
     all: 'All',
+    adSlide1: 'Your ad could be here',
+    adSlide2: 'Contact us',
+    adSlide3: 'Telegram: @Prostaffsam',
   },
   
   // Post Types
