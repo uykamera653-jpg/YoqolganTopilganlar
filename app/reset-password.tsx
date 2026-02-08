@@ -10,15 +10,19 @@ import { spacing, typography, borderRadius } from '@/constants/theme';
 import { getSupabaseClient } from '@/template';
 
 export default function ResetPasswordScreen() {
+  console.log('[RESET-PASSWORD] Component mounted');
   const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
   const router = useRouter();
-  const { mode: initialMode } = useLocalSearchParams<{ mode?: 'request' | 'update' }>();
+  const params = useLocalSearchParams();
+  console.log('[RESET-PASSWORD] Params:', params);
   const { t } = useLanguage();
   const { colors } = useTheme();
   const supabase = getSupabaseClient();
 
+  const initialMode = params.mode as string | undefined;
   const [mode, setMode] = useState<'request' | 'update'>(initialMode === 'update' ? 'update' : 'request');
+  console.log('[RESET-PASSWORD] Initial mode:', mode);
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

@@ -307,13 +307,14 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={styles.forgotPasswordButton}
               onPress={() => {
-                console.log('Forgot password pressed - navigating to /reset-password');
+                console.log('[LOGIN] Forgot password button pressed');
+                console.log('[LOGIN] Current route:', router);
                 try {
                   router.push('/reset-password');
-                  console.log('Navigation called successfully');
+                  console.log('[LOGIN] Navigation to /reset-password called');
                 } catch (error) {
-                  console.error('Navigation error:', error);
-                  showAlert(t.error, 'Navigation error');
+                  console.error('[LOGIN] Navigation error:', error);
+                  showAlert(t.error, `Navigation error: ${error}`);
                 }
               }}
             >
