@@ -23,7 +23,11 @@ export default function ResetPasswordScreen() {
   const initialMode = params.mode as string | undefined;
   const [mode, setMode] = useState<'request' | 'update'>(initialMode === 'update' ? 'update' : 'request');
   console.log('[RESET-PASSWORD] Initial mode:', mode);
-  const [email, setEmail] = useState('');
+  
+  // Auto-fill email from login screen
+  const initialEmail = (params.email as string) || '';
+  const [email, setEmail] = useState(initialEmail);
+  console.log('[RESET-PASSWORD] Initial email:', initialEmail);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
