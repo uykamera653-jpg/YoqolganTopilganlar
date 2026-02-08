@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import { Post } from '@/types';
 import { PostCard } from '@/components';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 type FilterType = 'all' | 'found' | 'lost' | 'reward';
 
@@ -21,6 +21,7 @@ export default function PostsListScreen() {
   const { colors } = useTheme();
   const [showRegionFilter, setShowRegionFilter] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(region || '');
+  const [regionSearchText, setRegionSearchText] = useState('');
 
   const regions = [
     { key: '', label: t.regions.all },
@@ -39,6 +40,12 @@ export default function PostsListScreen() {
     { key: 'surkhandarya', label: t.regions.surkhandarya },
     { key: 'khorezm', label: t.regions.khorezm },
   ];
+
+  const filteredRegionOptions = useMemo(() => {
+    if (!regionSearchText.trim()) return regions;
+    const searchText = regionSearchText.toLowerCase();
+    return regions.filter(r => r.label.toLowerCase().includes(searchText));
+  }, [regionSearchText, regions]);
 
   const getFilteredPosts = (): Post[] => {
     let filtered = posts;
@@ -106,7 +113,10 @@ export default function PostsListScreen() {
           headerRight: () => (
             <TouchableOpacity
               style={styles.filterButton}
-              onPress={() => setShowRegionFilter(true)}
+              onPress={() => {
+                setShowRegionFilter(true);
+                setRegionSearchText('');
+              }}
             >
               <MaterialIcons name="filter-list" size={24} color={staticColors.white} />
               {selectedRegion && <View style={styles.filterBadge} />}
@@ -146,12 +156,7 @@ export default function PostsListScreen() {
           />
         )}
 
-        <Modal
-          visible={showRegionFilter}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setShowRegionFilter(false)}
-        >
+        {showRegionFilter && (
           <TouchableOpacity
             style={styles.modalOverlay}
             activeOpacity={1}
@@ -164,28 +169,42 @@ export default function PostsListScreen() {
                   <MaterialIcons name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
-              <ScrollView style={styles.regionList} showsVerticalScrollIndicator={false}>
-                {regions.map((r) => (
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={[styles.searchInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                  value={regionSearchText}
+                  onChangeText={setRegionSearchText}
+                  placeholder={t.postForm.regionPlaceholder}
+                  placeholderTextColor={colors.textSecondary}
+                  autoFocus
+                />
+              </View>
+              <FlatList
+                data={filteredRegionOptions}
+                keyExtractor={(item) => item.key}
+                style={styles.regionList}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => (
                   <TouchableOpacity
-                    key={r.key}
-                    style={[styles.regionItem, { borderBottomColor: colors.border }, selectedRegion === r.key && { backgroundColor: colors.primary + '10' }]}
+                    style={[styles.regionItem, { borderBottomColor: colors.border }, selectedRegion === item.key && { backgroundColor: colors.primary + '10' }]}
                     onPress={() => {
-                      setSelectedRegion(r.key);
+                      setSelectedRegion(item.key);
                       setShowRegionFilter(false);
+                      setRegionSearchText('');
                     }}
                   >
-                    <Text style={[styles.regionItemText, { color: selectedRegion === r.key ? colors.primary : colors.text }]}>
-                      {r.label}
+                    <Text style={[styles.regionItemText, { color: selectedRegion === item.key ? colors.primary : colors.text }]}>
+                      {item.label}
                     </Text>
-                    {selectedRegion === r.key && (
+                    {selectedRegion === item.key && (
                       <MaterialIcons name="check" size={20} color={colors.primary} />
                     )}
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
+                )}
+              />
             </View>
           </TouchableOpacity>
-        </Modal>
+        )}
       </View>
     </>
   );
@@ -261,6 +280,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderBottomWidth: 1,
+  },
+  searchContainer: {
+    padding: spacing.md,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: typography.base,
   },
   modalTitle: {
     fontSize: typography.lg,

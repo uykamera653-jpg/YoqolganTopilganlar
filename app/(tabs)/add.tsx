@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Modal } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -31,7 +31,7 @@ export default function AddPostScreen() {
   const [dateOccurred, setDateOccurred] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showRegionPicker, setShowRegionPicker] = useState(false);
+  const [showRegionSuggestions, setShowRegionSuggestions] = useState(false);
 
   const regions = [
     { key: 'tashkent_city', label: t.regions.tashkent_city },
@@ -49,6 +49,12 @@ export default function AddPostScreen() {
     { key: 'surkhandarya', label: t.regions.surkhandarya },
     { key: 'khorezm', label: t.regions.khorezm },
   ];
+
+  const filteredRegions = useMemo(() => {
+    if (!region.trim()) return regions;
+    const searchText = region.toLowerCase();
+    return regions.filter(r => r.label.toLowerCase().includes(searchText));
+  }, [region, regions]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -145,7 +151,7 @@ export default function AddPostScreen() {
                 color={type === 'found' ? '#FFFFFF' : colors.found}
               />
               <Text style={[styles.typeButtonText, { color: colors.text }, type === 'found' && { color: '#FFFFFF' }]}>
-                {t.postTypes.found}
+                {t.postForm.typeFound}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -158,7 +164,7 @@ export default function AddPostScreen() {
                 color={type === 'lost' ? '#FFFFFF' : colors.lost}
               />
               <Text style={[styles.typeButtonText, { color: colors.text }, type === 'lost' && { color: '#FFFFFF' }]}>
-                {t.postTypes.lost}
+                {t.postForm.typeLost}
               </Text>
             </TouchableOpacity>
           </View>
@@ -196,15 +202,41 @@ export default function AddPostScreen() {
           />
 
           <Text style={[styles.label, { color: colors.text }]}>{t.postForm.region}</Text>
-          <TouchableOpacity
-            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            onPress={() => setShowRegionPicker(true)}
-          >
-            <Text style={[styles.regionText, { color: region ? colors.text : colors.textSecondary }]}>
-              {region || t.postForm.regionPlaceholder}
-            </Text>
-            <MaterialIcons name="arrow-drop-down" size={24} color={colors.textSecondary} />
-          </TouchableOpacity>
+          <View>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+              value={region}
+              onChangeText={(text) => {
+                setRegion(text);
+                setShowRegionSuggestions(text.length > 0);
+              }}
+              onFocus={() => setShowRegionSuggestions(region.length > 0)}
+              onBlur={() => setTimeout(() => setShowRegionSuggestions(false), 200)}
+              placeholder={t.postForm.regionPlaceholder}
+              placeholderTextColor={colors.textSecondary}
+            />
+            {showRegionSuggestions && filteredRegions.length > 0 && (
+              <View style={[styles.suggestionsContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <FlatList
+                  data={filteredRegions}
+                  keyExtractor={(item) => item.key}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
+                      onPress={() => {
+                        setRegion(item.label);
+                        setShowRegionSuggestions(false);
+                      }}
+                    >
+                      <Text style={[styles.suggestionText, { color: colors.text }]}>{item.label}</Text>
+                    </TouchableOpacity>
+                  )}
+                  keyboardShouldPersistTaps="handled"
+                  nestedScrollEnabled
+                />
+              </View>
+            )}
+          </View>
 
           <Text style={[styles.label, { color: colors.text }]}>{t.postForm.location} *</Text>
           <TextInput
@@ -262,47 +294,6 @@ export default function AddPostScreen() {
             )}
           </TouchableOpacity>
         </ScrollView>
-
-        <Modal
-          visible={showRegionPicker}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setShowRegionPicker(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowRegionPicker(false)}
-          >
-            <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                <Text style={[styles.modalTitle, { color: colors.text }]}>{t.postForm.region}</Text>
-                <TouchableOpacity onPress={() => setShowRegionPicker(false)}>
-                  <MaterialIcons name="close" size={24} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-              <ScrollView style={styles.regionList} showsVerticalScrollIndicator={false}>
-                {regions.map((r) => (
-                  <TouchableOpacity
-                    key={r.key}
-                    style={[styles.regionItem, { borderBottomColor: colors.border }, region === r.label && { backgroundColor: colors.primary + '10' }]}
-                    onPress={() => {
-                      setRegion(r.label);
-                      setShowRegionPicker(false);
-                    }}
-                  >
-                    <Text style={[styles.regionItemText, { color: region === r.label ? colors.primary : colors.text }]}>
-                      {r.label}
-                    </Text>
-                    {region === r.label && (
-                      <MaterialIcons name="check" size={20} color={colors.primary} />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </TouchableOpacity>
-        </Modal>
       </View>
     </KeyboardAvoidingView>
   );
@@ -393,43 +384,24 @@ const styles = StyleSheet.create({
     fontSize: typography.lg,
     fontWeight: typography.semibold,
   },
-  regionText: {
-    flex: 1,
-    fontSize: typography.base,
+  suggestionsContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    maxHeight: 200,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: borderRadius.md,
+    borderBottomRightRadius: borderRadius.md,
+    zIndex: 1000,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    maxHeight: '70%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-  },
-  modalTitle: {
-    fontSize: typography.lg,
-    fontWeight: typography.semibold,
-  },
-  regionList: {
-    maxHeight: 400,
-  },
-  regionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  suggestionItem: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
   },
-  regionItemText: {
+  suggestionText: {
     fontSize: typography.base,
   },
 });
