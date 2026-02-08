@@ -33,6 +33,7 @@ export default {
     and: 'va',
     privacyInfo: 'Ma\'lumotlaringiz xavfsizligi uchun',
     privacyDescription: 'Biz sizning ma\'lumotlaringizni himoya qilish uchun eng so\'nggi texnologiyalardan foydalanamiz. Hech kim sizdan shaxsiy ma\'lumotlaringizni so\'ramaydi. Barcha ma\'lumotlar xavfsiz serverlarimizda saqlanadi.',
+    loginRequired: 'Sharh yozish uchun tizimga kiring',
   },
   
   // Tabs
@@ -139,6 +140,7 @@ export default {
     startConversation: 'Suhbat boshlash uchun biror kishiga xabar yuboring',
     typeMessage: 'Xabar yozish...',
     chatWith: 'bilan suhbat',
+    justNow: 'Hozir',
   },
   
   // Send Message
@@ -192,6 +194,10 @@ export default {
     invalidEmail: 'Noto\'g\'ri email',
     passwordMismatch: 'Parollar mos kelmaydi',
     weakPassword: 'Parol juda oddiy',
+    duplicateEmail: 'Bu email allaqachon ro\'yxatdan o\'tgan. Iltimos, kirish qismidan foydalaning.',
+    invalidOtp: 'Tasdiqlash kodi noto\'g\'ri. Iltimos, qaytadan urinib ko\'ring.',
+    invalidCredentials: 'Email yoki parol noto\'g\'ri. Iltimos, qaytadan urinib ko\'ring.',
+    userNotFound: 'Bu email bilan ro\'yxatdan o\'tilmagan.',
   },
   
   // Privacy & Terms
@@ -205,5 +211,19 @@ export default {
     title: 'Foydalanish shartlari',
     lastUpdated: 'Oxirgi yangilanish',
     description: 'FINDO ilovasidan foydalanish shartlari.',
+  },
+
+  // Reset Password
+  resetPassword: {
+    title: 'Parolni tiklash',
+    newPasswordTitle: 'Yangi parol yaratish',
+    requestSubtitle: 'Emailingizga parolni tiklash havolasi yuboramiz',
+    updateSubtitle: 'Yangi parol kiriting',
+    sendLink: 'Havolani yuborish',
+    updatePassword: 'Parolni yangilash',
+    newPassword: 'Yangi parol',
+    backToLogin: 'Kirish sahifasiga qaytish',
+    linkSent: 'Parolni tiklash havolasi emailingizga yuborildi. Iltimos, emailni tekshiring.',
+    passwordUpdated: 'Parol muvaffaqiyatli yangilandi!',
   },
 };

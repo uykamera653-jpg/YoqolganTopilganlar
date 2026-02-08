@@ -77,9 +77,9 @@ export default function LoginScreen() {
       let errorMessage = error;
       
       if (error.toLowerCase().includes('already') || error.toLowerCase().includes('exist')) {
-        errorMessage = 'Bu email allaqachon ro\'yxatdan o\'tgan. Iltimos, kirish qismidan foydalaning.';
+        errorMessage = t.errors.duplicateEmail;
       } else if (error.toLowerCase().includes('invalid') || error.toLowerCase().includes('otp')) {
-        errorMessage = 'Tasdiqlash kodi noto\'g\'ri. Iltimos, qaytadan urinib ko\'ring.';
+        errorMessage = t.errors.invalidOtp;
       }
       
       showAlert(t.error, errorMessage);
@@ -101,9 +101,9 @@ export default function LoginScreen() {
       let errorMessage = error;
       
       if (error.toLowerCase().includes('invalid') || error.toLowerCase().includes('credentials')) {
-        errorMessage = 'Email yoki parol noto\'g\'ri. Iltimos, qaytadan urinib ko\'ring.';
+        errorMessage = t.errors.invalidCredentials;
       } else if (error.toLowerCase().includes('not found') || error.toLowerCase().includes('user')) {
-        errorMessage = 'Bu email bilan ro\'yxatdan o\'tilmagan.';
+        errorMessage = t.errors.userNotFound;
       }
       
       showAlert(t.error, errorMessage);

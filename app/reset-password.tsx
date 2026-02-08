@@ -48,7 +48,7 @@ export default function ResetPasswordScreen() {
 
       showAlert(
         t.success,
-        'Parolni tiklash havolasi emailingizga yuborildi. Iltimos, emailni tekshiring.',
+        t.resetPassword.linkSent,
         [
           {
             text: 'OK',
@@ -90,7 +90,7 @@ export default function ResetPasswordScreen() {
 
       showAlert(
         t.success,
-        'Parol muvaffaqiyatli yangilandi!',
+        t.resetPassword.passwordUpdated,
         [
           {
             text: 'OK',
@@ -125,12 +125,12 @@ export default function ResetPasswordScreen() {
             <MaterialIcons name="lock-reset" size={48} color={colors.white} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>
-            {mode === 'request' ? 'Parolni tiklash' : 'Yangi parol yaratish'}
+            {mode === 'request' ? t.resetPassword.title : t.resetPassword.newPasswordTitle}
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             {mode === 'request'
-              ? 'Emailingizga parolni tiklash havolasi yuboramiz'
-              : 'Yangi parol kiriting'}
+              ? t.resetPassword.requestSubtitle
+              : t.resetPassword.updateSubtitle}
           </Text>
         </View>
 
@@ -158,7 +158,7 @@ export default function ResetPasswordScreen() {
                 ) : (
                   <>
                     <MaterialIcons name="email" size={24} color="#FFFFFF" />
-                    <Text style={styles.submitButtonText}>Havolani yuborish</Text>
+                    <Text style={styles.submitButtonText}>{t.resetPassword.sendLink}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -169,7 +169,7 @@ export default function ResetPasswordScreen() {
                 style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 value={newPassword}
                 onChangeText={setNewPassword}
-                placeholder="Yangi parol"
+                placeholder={t.resetPassword.newPassword}
                 placeholderTextColor={colors.textSecondary}
                 secureTextEntry
                 editable={!loading}
@@ -195,7 +195,7 @@ export default function ResetPasswordScreen() {
                 ) : (
                   <>
                     <MaterialIcons name="check-circle" size={24} color="#FFFFFF" />
-                    <Text style={styles.submitButtonText}>Parolni yangilash</Text>
+                    <Text style={styles.submitButtonText}>{t.resetPassword.updatePassword}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -207,7 +207,7 @@ export default function ResetPasswordScreen() {
             onPress={() => router.replace('/login')}
           >
             <Text style={[styles.backToLoginText, { color: colors.primary }]}>
-              Kirish sahifasiga qaytish
+              {t.resetPassword.backToLogin}
             </Text>
           </TouchableOpacity>
         </View>

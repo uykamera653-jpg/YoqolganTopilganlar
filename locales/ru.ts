@@ -33,6 +33,7 @@ export default {
     and: 'и',
     privacyInfo: 'Безопасность ваших данных',
     privacyDescription: 'Мы используем новейшие технологии для защиты ваших данных. Никто не будет запрашивать вашу личную информацию. Все данные хранятся на наших защищенных серверах.',
+    loginRequired: 'Пожалуйста, войдите, чтобы написать комментарий',
   },
   
   // Tabs
@@ -193,6 +194,10 @@ export default {
     invalidEmail: 'Неверный email',
     passwordMismatch: 'Пароли не совпадают',
     weakPassword: 'Пароль слишком простой',
+    duplicateEmail: 'Этот email уже зарегистрирован. Пожалуйста, используйте раздел входа.',
+    invalidOtp: 'Неверный код подтверждения. Пожалуйста, попробуйте снова.',
+    invalidCredentials: 'Неверный email или пароль. Пожалуйста, попробуйте снова.',
+    userNotFound: 'Аккаунт с этим email не найден.',
   },
   
   // Privacy & Terms
@@ -206,5 +211,19 @@ export default {
     title: 'Условия использования',
     lastUpdated: 'Последнее обновление',
     description: 'Условия использования приложения FINDO.',
+  },
+
+  // Reset Password
+  resetPassword: {
+    title: 'Сброс пароля',
+    newPasswordTitle: 'Создать новый пароль',
+    requestSubtitle: 'Мы отправим ссылку для сброса пароля на ваш email',
+    updateSubtitle: 'Введите новый пароль',
+    sendLink: 'Отправить ссылку',
+    updatePassword: 'Обновить пароль',
+    newPassword: 'Новый пароль',
+    backToLogin: 'Вернуться к входу',
+    linkSent: 'Ссылка для сброса пароля отправлена на ваш email. Пожалуйста, проверьте почту.',
+    passwordUpdated: 'Пароль успешно обновлен!',
   },
 };

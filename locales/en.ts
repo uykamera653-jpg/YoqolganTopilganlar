@@ -33,6 +33,7 @@ export default {
     and: 'and',
     privacyInfo: 'Your Data Security',
     privacyDescription: 'We use the latest technology to protect your data. No one will ask for your personal information. All data is stored on our secure servers.',
+    loginRequired: 'Please login to write a comment',
   },
   
   // Tabs
@@ -139,6 +140,7 @@ export default {
     startConversation: 'Send a message to someone to start a conversation',
     typeMessage: 'Type a message...',
     chatWith: 'Chat with',
+    justNow: 'Just now',
   },
   
   // Send Message
@@ -192,6 +194,10 @@ export default {
     invalidEmail: 'Invalid email',
     passwordMismatch: 'Passwords do not match',
     weakPassword: 'Password is too weak',
+    duplicateEmail: 'This email is already registered. Please use the login section.',
+    invalidOtp: 'Invalid verification code. Please try again.',
+    invalidCredentials: 'Invalid email or password. Please try again.',
+    userNotFound: 'No account found with this email.',
   },
   
   // Privacy & Terms
@@ -205,5 +211,19 @@ export default {
     title: 'Terms of Service',
     lastUpdated: 'Last Updated',
     description: 'Terms of Service for using FINDO app.',
+  },
+
+  // Reset Password
+  resetPassword: {
+    title: 'Reset Password',
+    newPasswordTitle: 'Create New Password',
+    requestSubtitle: 'We will send a password reset link to your email',
+    updateSubtitle: 'Enter your new password',
+    sendLink: 'Send Link',
+    updatePassword: 'Update Password',
+    newPassword: 'New Password',
+    backToLogin: 'Back to Login',
+    linkSent: 'Password reset link has been sent to your email. Please check your email.',
+    passwordUpdated: 'Password successfully updated!',
   },
 };
