@@ -161,7 +161,6 @@ export default function AdminScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -169,12 +168,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    backgroundColor: colors.primary,
   },
   headerTitle: {
     fontSize: typography.xl,
     fontWeight: typography.bold,
-    color: colors.white,
+    color: '#FFFFFF',
   },
   loadingContainer: {
     flex: 1,
@@ -190,7 +188,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.xl,
     fontWeight: typography.bold,
-    color: colors.text,
     marginBottom: spacing.md,
   },
   statsGrid: {
@@ -209,12 +206,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: typography.xxxl,
     fontWeight: typography.bold,
-    color: colors.white,
+    color: '#FFFFFF',
     marginTop: spacing.sm,
   },
   statLabel: {
     fontSize: typography.sm,
-    color: colors.white,
+    color: '#FFFFFF',
     marginTop: spacing.xs,
     textAlign: 'center',
   },
@@ -227,7 +224,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: typography.lg,
-    color: colors.textSecondary,
     marginTop: spacing.md,
   },
   postItem: {
@@ -237,7 +233,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.error,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
@@ -247,7 +242,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   deleteButtonText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.base,
     fontWeight: typography.semibold,
     marginLeft: spacing.xs,
