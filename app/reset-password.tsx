@@ -20,14 +20,13 @@ export default function ResetPasswordScreen() {
   const { colors } = useTheme();
   const supabase = getSupabaseClient();
 
-  const initialMode = params.mode as string | undefined;
-  const [mode, setMode] = useState<'request' | 'update'>(initialMode === 'update' ? 'update' : 'request');
-  console.log('[RESET-PASSWORD] Initial mode:', mode);
-  
   // Auto-fill email from login screen
   const initialEmail = (params.email as string) || '';
   const [email, setEmail] = useState(initialEmail);
   console.log('[RESET-PASSWORD] Initial email:', initialEmail);
+  
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,28 +46,21 @@ export default function ResetPasswordScreen() {
     }
 
     setLoading(true);
-    console.log('Sending password reset email to:', email);
+    console.log('Sending password reset OTP to:', email);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'onspaceapp://reset-password?mode=update',
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
 
       if (error) {
         console.error('Reset password error:', error);
         throw error;
       }
 
-      console.log('Password reset email sent successfully');
+      console.log('Password reset OTP sent successfully');
+      setOtpSent(true);
       showAlert(
         t.success,
-        t.resetPassword.linkSent,
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
+        'Tasdiqlash kodi va yangi parol yaratish havolasi emailingizga yuborildi. Emaildan kelgan 6 xonali kodni kiriting.'
       );
     } catch (error: any) {
       console.error('handleRequestReset error:', error);
@@ -79,8 +71,13 @@ export default function ResetPasswordScreen() {
   };
 
   const handleUpdatePassword = async () => {
-    if (!newPassword.trim() || !confirmPassword.trim()) {
+    if (!email.trim() || !otpCode.trim() || !newPassword.trim() || !confirmPassword.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
+      return;
+    }
+
+    if (otpCode.length !== 6) {
+      showAlert(t.error, 'Tasdiqlash kodi 6 xonali bo\'lishi kerak');
       return;
     }
 
@@ -95,14 +92,32 @@ export default function ResetPasswordScreen() {
     }
 
     setLoading(true);
+    console.log('Verifying OTP and updating password...');
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Verify OTP and update password
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'recovery',
+      });
+
+      if (error) {
+        console.error('OTP verification error:', error);
+        throw error;
+      }
+
+      // Update password after OTP verification
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
-      if (error) throw error;
+      if (updateError) {
+        console.error('Password update error:', updateError);
+        throw updateError;
+      }
 
+      console.log('Password updated successfully');
       showAlert(
         t.success,
         t.resetPassword.passwordUpdated,
@@ -116,7 +131,12 @@ export default function ResetPasswordScreen() {
         ]
       );
     } catch (error: any) {
-      showAlert(t.error, error.message || t.errors.generic);
+      console.error('handleUpdatePassword error:', error);
+      let errorMessage = error.message || t.errors.generic;
+      if (error.message?.toLowerCase().includes('invalid') || error.message?.toLowerCase().includes('otp')) {
+        errorMessage = 'Tasdiqlash kodi noto\'g\'ri yoki muddati o\'tgan. Iltimos, qaytadan urinib ko\'ring.';
+      }
+      showAlert(t.error, errorMessage);
     } finally {
       setLoading(false);
     }
@@ -150,36 +170,52 @@ export default function ResetPasswordScreen() {
         </View>
 
         <View style={styles.form}>
-          {mode === 'request' ? (
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+            value={email}
+            onChangeText={setEmail}
+            placeholder={t.auth.email}
+            placeholderTextColor={colors.textSecondary}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!loading && !otpSent}
+          />
+
+          {!otpSent ? (
+            <TouchableOpacity
+              style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
+              onPress={handleRequestReset}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <MaterialIcons name="email" size={24} color="#FFFFFF" />
+                  <Text style={styles.submitButtonText}>Tasdiqlash kodi yuborish</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : (
             <>
+              <View style={[styles.infoBox, { backgroundColor: colors.primary + '15', borderColor: colors.primary }]}>
+                <MaterialIcons name="info" size={20} color={colors.primary} />
+                <Text style={[styles.infoText, { color: colors.text }]}>
+                  Emailingizga yuborilgan 6 xonali tasdiqlash kodini va yangi parolni kiriting
+                </Text>
+              </View>
+
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-                value={email}
-                onChangeText={setEmail}
-                placeholder={t.auth.email}
+                value={otpCode}
+                onChangeText={setOtpCode}
+                placeholder="Tasdiqlash kodi (6 xonali)"
                 placeholderTextColor={colors.textSecondary}
-                keyboardType="email-address"
-                autoCapitalize="none"
+                keyboardType="number-pad"
+                maxLength={6}
                 editable={!loading}
               />
 
-              <TouchableOpacity
-                style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
-                onPress={handleRequestReset}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <>
-                    <MaterialIcons name="email" size={24} color="#FFFFFF" />
-                    <Text style={styles.submitButtonText}>{t.resetPassword.sendLink}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 value={newPassword}
@@ -210,9 +246,21 @@ export default function ResetPasswordScreen() {
                 ) : (
                   <>
                     <MaterialIcons name="check-circle" size={24} color="#FFFFFF" />
-                    <Text style={styles.submitButtonText}>{t.resetPassword.updatePassword}</Text>
+                    <Text style={styles.submitButtonText}>Parolni yangilash</Text>
                   </>
                 )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.resendButton}
+                onPress={() => {
+                  setOtpSent(false);
+                  setOtpCode('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
+              >
+                <Text style={[styles.resendButtonText, { color: colors.primary }]}>Qaytadan kod yuborish</Text>
               </TouchableOpacity>
             </>
           )}
@@ -301,6 +349,28 @@ const styles = StyleSheet.create({
   },
   backToLoginText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: typography.sm,
+    lineHeight: 18,
+  },
+  resendButton: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  resendButtonText: {
+    fontSize: typography.base,
     fontWeight: '600',
   },
 });
