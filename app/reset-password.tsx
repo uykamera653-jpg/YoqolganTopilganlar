@@ -25,11 +25,27 @@ export default function ResetPasswordScreen() {
   const [email, setEmail] = useState(initialEmail);
   console.log('[RESET-PASSWORD] Initial email:', initialEmail);
   
+  // Detect if user came from email link with access token
+  const [hasAccessToken, setHasAccessToken] = useState(false);
+  
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already authenticated (came from email link)
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log('[RESET-PASSWORD] User authenticated via email link');
+        setHasAccessToken(true);
+        setEmail(session.user.email || '');
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleRequestReset = async () => {
     console.log('handleRequestReset called');
@@ -70,7 +86,7 @@ export default function ResetPasswordScreen() {
     }
   };
 
-  const handleUpdatePassword = async () => {
+  const handleUpdatePasswordWithOTP = async () => {
     if (!email.trim() || !otpCode.trim() || !newPassword.trim() || !confirmPassword.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
       return;
@@ -131,12 +147,62 @@ export default function ResetPasswordScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('handleUpdatePassword error:', error);
+      console.error('handleUpdatePasswordWithOTP error:', error);
       let errorMessage = error.message || t.errors.generic;
       if (error.message?.toLowerCase().includes('invalid') || error.message?.toLowerCase().includes('otp')) {
         errorMessage = 'Tasdiqlash kodi noto\'g\'ri yoki muddati o\'tgan. Iltimos, qaytadan urinib ko\'ring.';
       }
       showAlert(t.error, errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePasswordDirect = async () => {
+    if (!newPassword.trim() || !confirmPassword.trim()) {
+      showAlert(t.error, t.errors.fillAllFields);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showAlert(t.error, t.errors.passwordMismatch);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showAlert(t.error, t.errors.weakPassword);
+      return;
+    }
+
+    setLoading(true);
+    console.log('Updating password directly (via email link)...');
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        console.error('Password update error:', error);
+        throw error;
+      }
+
+      console.log('Password updated successfully');
+      showAlert(
+        t.success,
+        t.resetPassword.passwordUpdated,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              router.replace('/login');
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.error('handleUpdatePasswordDirect error:', error);
+      showAlert(t.error, error.message || t.errors.generic);
     } finally {
       setLoading(false);
     }
@@ -170,18 +236,62 @@ export default function ResetPasswordScreen() {
         </View>
 
         <View style={styles.form}>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-            value={email}
-            onChangeText={setEmail}
-            placeholder={t.auth.email}
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            editable={!loading && !otpSent}
-          />
+          {!hasAccessToken && (
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder={t.auth.email}
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!loading && !otpSent}
+            />
+          )}
 
-          {!otpSent ? (
+          {hasAccessToken ? (
+            <>
+              <View style={[styles.infoBox, { backgroundColor: colors.primary + '15', borderColor: colors.primary }]}>
+                <MaterialIcons name="check-circle" size={20} color={colors.primary} />
+                <Text style={[styles.infoText, { color: colors.text }]}>Email tasdiqlandi! Endi yangi parol kiriting.</Text>
+              </View>
+
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder={t.resetPassword.newPassword}
+                placeholderTextColor={colors.textSecondary}
+                secureTextEntry
+                editable={!loading}
+              />
+
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder={t.auth.confirmPassword}
+                placeholderTextColor={colors.textSecondary}
+                secureTextEntry
+                editable={!loading}
+              />
+
+              <TouchableOpacity
+                style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
+                onPress={handleUpdatePasswordDirect}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <>
+                    <MaterialIcons name="check-circle" size={24} color="#FFFFFF" />
+                    <Text style={styles.submitButtonText}>Parolni yangilash</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
+          ) : !otpSent ? (
             <TouchableOpacity
               style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
               onPress={handleRequestReset}
@@ -238,7 +348,7 @@ export default function ResetPasswordScreen() {
 
               <TouchableOpacity
                 style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
-                onPress={handleUpdatePassword}
+                onPress={handleUpdatePasswordWithOTP}
                 disabled={loading}
               >
                 {loading ? (
@@ -265,14 +375,16 @@ export default function ResetPasswordScreen() {
             </>
           )}
 
-          <TouchableOpacity
-            style={styles.backToLoginButton}
-            onPress={() => router.replace('/login')}
-          >
-            <Text style={[styles.backToLoginText, { color: colors.primary }]}>
-              {t.resetPassword.backToLogin}
-            </Text>
-          </TouchableOpacity>
+          {!hasAccessToken && (
+            <TouchableOpacity
+              style={styles.backToLoginButton}
+              onPress={() => router.replace('/login')}
+            >
+              <Text style={[styles.backToLoginText, { color: colors.primary }]}>
+                {t.resetPassword.backToLogin}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
