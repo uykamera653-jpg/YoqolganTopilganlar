@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -27,6 +27,9 @@ export default function ResetPasswordScreen() {
   
   // Detect if user came from email link with access token
   const [hasAccessToken, setHasAccessToken] = useState(false);
+  
+  // Determine mode: request = send email, update = change password
+  const mode = hasAccessToken ? 'update' : 'request';
   
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
