@@ -302,6 +302,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     maxHeight: '70%',
+    paddingBottom: 40,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -353,7 +354,8 @@ const styles = StyleSheet.create({
     fontWeight: typography.semibold,
   },
   regionList: {
-    maxHeight: 400,
+    flex: 1,
+    paddingBottom: spacing.lg,
   },
   regionItem: {
     flexDirection: 'row',
