@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
+import {View,Text,StyleSheet,FlatList,ActivityIndicator,TouchableOpacity,TextInput,KeyboardAvoidingView,Platform} from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -168,7 +168,11 @@ export default function PostsListScreen() {
             activeOpacity={1}
             onPress={() => setShowRegionFilter(false)}
           >
-            <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <KeyboardAvoidingView
+  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  style={{ width: '100%' }}
+>
+  <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
               <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>{t.regions.title}</Text>
                 <View style={styles.headerActions}>
@@ -232,6 +236,7 @@ export default function PostsListScreen() {
                 )}
               />
             </View>
+           </KeyboardAvoidingView>
           </TouchableOpacity>
         )}
       </View>
