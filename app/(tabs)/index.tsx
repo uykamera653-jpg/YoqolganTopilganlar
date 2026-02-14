@@ -150,7 +150,7 @@ export default function HomeScreen() {
         <TouchableOpacity 
           style={[styles.mediaContainer, { backgroundColor: colors.surface }]}
           onPress={() => {
-            Linking.openURL('https://t.me/Prostaffsam').catch(err => console.error('Error opening Telegram:', err));
+            Linking.openURL('https://t.me/Prostaffsamm').catch(err => console.error('Error opening Telegram:', err));
           }}
           activeOpacity={0.8}
         >
