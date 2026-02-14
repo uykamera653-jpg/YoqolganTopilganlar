@@ -301,13 +301,14 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    maxHeight: '120%',
-    paddingBottom: 40,
+    maxHeight: '70%',
+    paddingBottom: 20,
   },
   modalHeader: {
     flexDirection: 'row',
