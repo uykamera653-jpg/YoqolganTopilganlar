@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    maxHeight: '95%',
+    maxHeight: '120%',
     paddingBottom: 40,
   },
   modalHeader: {
