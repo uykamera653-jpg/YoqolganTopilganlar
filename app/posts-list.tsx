@@ -23,6 +23,7 @@ export default function PostsListScreen() {
   const [selectedRegion, setSelectedRegion] = useState(region || '');
   const [regionSearchText, setRegionSearchText] = useState('');
   const [manualRegionInput, setManualRegionInput] = useState('');
+  const [itemSearchText, setItemSearchText] = useState('');
 
   const regions = [
     { key: '', label: t.regions.all },
@@ -74,6 +75,16 @@ export default function PostsListScreen() {
       filtered = filtered.filter(post => {
         if (!post.region) return false;
         return post.region.toLowerCase().includes(searchRegion.toLowerCase());
+      });
+    }
+
+    // Filter by item name/description
+    if (itemSearchText.trim()) {
+      const searchTerm = itemSearchText.toLowerCase();
+      filtered = filtered.filter(post => {
+        const titleMatch = post.title.toLowerCase().includes(searchTerm);
+        const descriptionMatch = post.description.toLowerCase().includes(searchTerm);
+        return titleMatch || descriptionMatch;
       });
     }
 
@@ -131,6 +142,27 @@ export default function PostsListScreen() {
         }}
       />
       <View style={[styles.container, { backgroundColor: colors.background, paddingBottom: insets.bottom }]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <View style={styles.searchInputWrapper}>
+            <MaterialIcons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              style={[styles.topSearchInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+              value={itemSearchText}
+              onChangeText={setItemSearchText}
+              placeholder={t.language === 'uz' ? 'Buyum nomi...' : t.language === 'ru' ? 'Название предмета...' : 'Item name...'}
+              placeholderTextColor={colors.textSecondary}
+              returnKeyType="search"
+            />
+            {itemSearchText.length > 0 && (
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => setItemSearchText('')}
+              >
+                <MaterialIcons name="close" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
         {loading && filteredPosts.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -138,9 +170,18 @@ export default function PostsListScreen() {
         ) : filteredPosts.length === 0 ? (
           <View style={styles.emptyContainer}>
             <MaterialIcons name={getFilterIcon()} size={64} color={colors.textSecondary} />
-            <Text style={[styles.emptyText, { color: colors.text }]}>E'lonlar topilmadi</Text>
+            <Text style={[styles.emptyText, { color: colors.text }]}>
+              {t.language === 'uz' ? 'E\'lonlar topilmadi' : t.language === 'ru' ? 'Объявления не найдены' : 'No posts found'}
+            </Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-              Bu kategoriyada hozircha e'lonlar yo'q
+              {itemSearchText ? 
+                (t.language === 'uz' ? `"${itemSearchText}" uchun natija yo'q` : 
+                 t.language === 'ru' ? `Нет результатов для "${itemSearchText}"` : 
+                 `No results for "${itemSearchText}"`) :
+                (t.language === 'uz' ? 'Bu kategoriyada hozircha e\'lonlar yo\'q' : 
+                 t.language === 'ru' ? 'В этой категории пока нет объявлений' : 
+                 'No posts in this category yet')
+              }
             </Text>
             <TouchableOpacity
               style={[styles.backButton, { backgroundColor: colors.primary }]}
@@ -335,7 +376,22 @@ const styles = StyleSheet.create({
     fontWeight: typography.semibold,
   },
   searchContainer: {
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+  },
+  topSearchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    paddingLeft: spacing.xl + spacing.md,
+    paddingRight: spacing.xl + spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: typography.base,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: spacing.md,
   },
   searchInputWrapper: {
     flexDirection: 'row',
