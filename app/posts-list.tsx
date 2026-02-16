@@ -149,7 +149,7 @@ export default function PostsListScreen() {
               style={[styles.topSearchInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
               value={itemSearchText}
               onChangeText={setItemSearchText}
-              placeholder={t.language === 'uz' ? 'Buyum nomi...' : t.language === 'ru' ? 'Название предмета...' : 'Item name...'}
+              placeholder={t.search.itemName}
               placeholderTextColor={colors.textSecondary}
               returnKeyType="search"
             />
@@ -171,16 +171,12 @@ export default function PostsListScreen() {
           <View style={styles.emptyContainer}>
             <MaterialIcons name={getFilterIcon()} size={64} color={colors.textSecondary} />
             <Text style={[styles.emptyText, { color: colors.text }]}>
-              {t.language === 'uz' ? 'E\'lonlar topilmadi' : t.language === 'ru' ? 'Объявления не найдены' : 'No posts found'}
+              {t.search.noPostsFound}
             </Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
               {itemSearchText ? 
-                (t.language === 'uz' ? `"${itemSearchText}" uchun natija yo'q` : 
-                 t.language === 'ru' ? `Нет результатов для "${itemSearchText}"` : 
-                 `No results for "${itemSearchText}"`) :
-                (t.language === 'uz' ? 'Bu kategoriyada hozircha e\'lonlar yo\'q' : 
-                 t.language === 'ru' ? 'В этой категории пока нет объявлений' : 
-                 'No posts in this category yet')
+                `"${itemSearchText}" ${t.search.noResultsFor}` :
+                t.search.noCategoryPosts
               }
             </Text>
             <TouchableOpacity

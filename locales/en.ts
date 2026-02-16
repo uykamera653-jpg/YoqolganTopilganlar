@@ -67,6 +67,14 @@ export default {
     allPosts: 'All Posts',
   },
   
+  // Search
+  search: {
+    itemName: 'Item name...',
+    noPostsFound: 'No posts found',
+    noResultsFor: 'No results for',
+    noCategoryPosts: 'No posts in this category yet',
+  },
+  
   // Regions
   regions: {
     title: 'Region',

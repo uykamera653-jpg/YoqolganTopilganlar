@@ -67,6 +67,14 @@ export default {
     allPosts: 'Barcha e\'lonlar',
   },
   
+  // Search
+  search: {
+    itemName: 'Buyum nomi...',
+    noPostsFound: 'E\'lonlar topilmadi',
+    noResultsFor: 'uchun natija yo\'q',
+    noCategoryPosts: 'Bu kategoriyada hozircha e\'lonlar yo\'q',
+  },
+  
   // Regions
   regions: {
     title: 'Viloyat',

@@ -67,6 +67,14 @@ export default {
     allPosts: 'Все объявления',
   },
   
+  // Search
+  search: {
+    itemName: 'Название предмета...',
+    noPostsFound: 'Объявления не найдены',
+    noResultsFor: 'Нет результатов для',
+    noCategoryPosts: 'В этой категории пока нет объявлений',
+  },
+  
   // Regions
   regions: {
     title: 'Область',
