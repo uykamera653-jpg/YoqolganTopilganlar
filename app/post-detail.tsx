@@ -9,6 +9,7 @@ import { Post, Comment } from '@/types';
 import { useAuth, useAlert } from '@/template';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { moderateText, containsProfanity } from '@/services/moderationService';
 
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -52,7 +53,25 @@ export default function PostDetailScreen() {
       return;
     }
 
+    // Check for profanity (client-side quick check)
+    if (containsProfanity(newComment.trim())) {
+      showAlert(t.error, 'Sharhingizda nomaqbul so\'zlar aniqlandi. Iltimos, ularni o\'zgartiring.');
+      return;
+    }
+
     setCommentLoading(true);
+
+    // Moderate comment text
+    const moderationResult = await moderateText(newComment.trim());
+    if (!moderationResult.safe) {
+      setCommentLoading(false);
+      showAlert(
+        t.error,
+        moderationResult.reason || 'Sharhingizda nomaqbul kontent aniqlandi. Iltimos, uni o\'zgartiring.',
+      );
+      return;
+    }
+
     const { data, error } = await postService.addComment(id as string, newComment.trim());
 
     if (error) {

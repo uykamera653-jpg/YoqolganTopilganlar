@@ -11,6 +11,7 @@ import { PostFormData } from '@/types';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { moderateImage, moderateText, containsProfanity } from '@/services/moderationService';
 
 export default function AddPostScreen() {
   const insets = useSafeAreaInsets();
@@ -72,7 +73,25 @@ export default function AddPostScreen() {
     });
 
     if (!result.canceled && result.assets[0].base64) {
-      setImageUri(`data:image/jpeg;base64,${result.assets[0].base64}`);
+      const imageData = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      
+      // Show loading alert while moderating
+      setLoading(true);
+      
+      // Moderate image before setting
+      const moderationResult = await moderateImage(imageData);
+      
+      setLoading(false);
+      
+      if (!moderationResult.safe) {
+        showAlert(
+          t.error,
+          moderationResult.reason || 'Bu rasm nomaqbul kontent sababli rad etildi. Iltimos, boshqa rasm yuklang.',
+        );
+        return;
+      }
+      
+      setImageUri(imageData);
     }
   };
 
@@ -90,7 +109,34 @@ export default function AddPostScreen() {
       return;
     }
 
+    // Check for profanity in text fields (client-side quick check)
+    if (containsProfanity(title) || containsProfanity(description)) {
+      showAlert(t.error, 'Matnda nomaqbul so\'zlar aniqlandi. Iltimos, ularni o\'zgartiring.');
+      return;
+    }
+
     setLoading(true);
+
+    // Moderate title and description
+    const titleModeration = await moderateText(title.trim());
+    if (!titleModeration.safe) {
+      setLoading(false);
+      showAlert(
+        t.error,
+        titleModeration.reason || 'Sarlavhada nomaqbul kontent aniqlandi. Iltimos, uni o\'zgartiring.',
+      );
+      return;
+    }
+
+    const descriptionModeration = await moderateText(description.trim());
+    if (!descriptionModeration.safe) {
+      setLoading(false);
+      showAlert(
+        t.error,
+        descriptionModeration.reason || 'Tavsifda nomaqbul kontent aniqlandi. Iltimos, uni o\'zgartiring.',
+      );
+      return;
+    }
 
     const postData: PostFormData = {
       type,
