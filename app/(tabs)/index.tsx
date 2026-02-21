@@ -28,19 +28,11 @@ export default function HomeScreen() {
 
   const currentAd = ads[currentAdIndex];
   
-  // Create video player for mobile platforms
-  const videoPlayer = useVideoPlayer(
-    currentAd?.type === 'video' && currentAd?.media_url && Platform.OS !== 'web' 
-      ? currentAd.media_url
-      : '',
-    (player) => {
-      if (currentAd?.type === 'video' && currentAd?.media_url) {
-        player.loop = true;
-        player.muted = true;
-        player.play();
-      }
-    }
-  );
+  // Create video player for mobile platforms (always initialize, then update source)
+  const videoPlayer = useVideoPlayer('', (player) => {
+    player.loop = true;
+    player.muted = true;
+  });
 
   useEffect(() => {
     if (user) {
@@ -71,9 +63,34 @@ export default function HomeScreen() {
 
   // Replay video when ad changes
   useEffect(() => {
+    console.log('🎬 Video player effect triggered:', {
+      hasCurrentAd: !!currentAd,
+      adType: currentAd?.type,
+      hasMediaUrl: !!currentAd?.media_url,
+      platform: Platform.OS,
+      hasVideoPlayer: !!videoPlayer
+    });
+
     if (currentAd?.type === 'video' && currentAd?.media_url && Platform.OS !== 'web' && videoPlayer) {
-      videoPlayer.replace(currentAd.media_url);
-      videoPlayer.play();
+      try {
+        console.log('📹 Replacing video source:', currentAd.media_url.substring(0, 100));
+        videoPlayer.replace(currentAd.media_url);
+        videoPlayer.muted = true;
+        videoPlayer.loop = true;
+        
+        // Small delay to ensure video is loaded before playing
+        setTimeout(() => {
+          console.log('▶️ Starting video playback');
+          videoPlayer.play();
+        }, 100);
+      } catch (error) {
+        console.error('❌ Video player error:', error);
+      }
+    } else if (currentAd?.type === 'video' && Platform.OS !== 'web') {
+      console.warn('⚠️ Video ad but missing requirements:', {
+        hasMediaUrl: !!currentAd?.media_url,
+        hasPlayer: !!videoPlayer
+      });
     }
   }, [currentAd, videoPlayer]);
 
@@ -246,11 +263,14 @@ export default function HomeScreen() {
                     loop
                     muted
                     playsInline
-                    onError={() => console.error('❌ Video error:', currentAd.media_url)}
-                    onLoadedData={() => console.log('✅ Video loaded')}
+                    onError={(e) => {
+                      console.error('❌ Web video error:', currentAd.media_url);
+                      console.error('Error details:', e);
+                    }}
+                    onLoadedData={() => console.log('✅ Web video loaded:', currentAd.media_url.substring(0, 80))}
                   />
                 </View>
-              ) : (
+              ) : videoPlayer ? (
                 <View style={styles.videoContainer}>
                   <VideoView
                     player={videoPlayer}
@@ -260,6 +280,11 @@ export default function HomeScreen() {
                     allowsFullscreen={false}
                     allowsPictureInPicture={false}
                   />
+                </View>
+              ) : (
+                <View style={styles.mediaPlaceholder}>
+                  <MaterialIcons name="videocam-off" size={48} color={colors.primary} />
+                  <Text style={[styles.adTitle, { color: colors.text }]}>Video player xato</Text>
                 </View>
               )
             ) : (
