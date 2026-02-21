@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Switch, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useAdmin } from '@/hooks/useAdmin';
 import { reportService } from '@/services/reportService';
@@ -206,22 +207,89 @@ export default function AdminScreen() {
   };
 
   const pickImage = async () => {
+    console.log('🖼️ Starting image picker...');
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
+      console.log('❌ Permission denied');
       showAlert(t.error, t.errors.uploadError);
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
+      allowsEditing: false, // Fix: allowsEditing can cause base64 issues
       quality: 0.8,
-      base64: true,
+      base64: Platform.OS === 'web', // Only request base64 on web
     });
 
-    if (!result.canceled && result.assets[0].base64) {
-      setAdForm({ ...adForm, media_url: `data:image/jpeg;base64,${result.assets[0].base64}` });
+    console.log('📦 Image picker result:', {
+      canceled: result.canceled,
+      hasAssets: result.assets?.length > 0,
+      hasBase64: !!result.assets?.[0]?.base64,
+      hasUri: !!result.assets?.[0]?.uri,
+      fileSize: result.assets?.[0]?.fileSize,
+    });
+
+    if (result.canceled) {
+      console.log('⚠️ User canceled image selection');
+      return;
+    }
+
+    if (!result.assets || result.assets.length === 0) {
+      console.log('❌ No assets returned');
+      showAlert(t.error, 'Rasm tanlashda xatolik');
+      return;
+    }
+
+    const image = result.assets[0];
+
+    // Check file size (warn if > 5MB)
+    if (image.fileSize && image.fileSize > 5 * 1024 * 1024) {
+      console.warn('⚠️ Large image file:', Math.round(image.fileSize / 1024 / 1024), 'MB');
+      showAlert(
+        'Diqqat',
+        `Rasm hajmi ${Math.round(image.fileSize / 1024 / 1024)}MB. Yuklash sekin bo'lishi mumkin.`,
+        [
+          { text: 'Bekor qilish', style: 'cancel' },
+          {
+            text: 'Davom etish',
+            onPress: () => processImage(image)
+          },
+        ]
+      );
+      return;
+    }
+
+    await processImage(image);
+  };
+
+  const processImage = async (image: ImagePicker.ImagePickerAsset) => {
+    try {
+      let base64Data: string;
+
+      if (Platform.OS === 'web' && image.base64) {
+        // Web: use base64 from picker
+        console.log('🌐 Using web base64 from picker');
+        base64Data = image.base64;
+      } else if (image.uri) {
+        // Mobile: read file and convert to base64
+        console.log('📱 Reading file from URI:', image.uri.substring(0, 50));
+        const fileContent = await FileSystem.readAsStringAsync(image.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        console.log('✅ File read successfully, size:', Math.round(fileContent.length / 1024), 'KB');
+        base64Data = fileContent;
+      } else {
+        console.error('❌ No base64 or URI available');
+        showAlert(t.error, 'Rasm yuklashda xatolik');
+        return;
+      }
+
+      setAdForm({ ...adForm, media_url: `data:image/jpeg;base64,${base64Data}` });
+      console.log('✅ Image data set successfully');
+    } catch (error) {
+      console.error('❌ Error processing image:', error);
+      showAlert(t.error, `Rasm yuklashda xatolik: ${(error as Error).message}`);
     }
   };
 
@@ -234,15 +302,15 @@ export default function AdminScreen() {
       return;
     }
 
-    console.log('✅ Permission granted, launching image library...');
+    console.log('✅ Permission granted, launching video picker...');
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-      allowsEditing: false, // Editing can cause base64 issues
+      allowsEditing: false,
       quality: 0.8,
-      base64: true,
+      base64: Platform.OS === 'web', // Only request base64 on web
     });
 
-    console.log('📦 Picker result:', {
+    console.log('📦 Video picker result:', {
       canceled: result.canceled,
       hasAssets: result.assets?.length > 0,
       hasBase64: !!result.assets?.[0]?.base64,
@@ -281,27 +349,46 @@ export default function AdminScreen() {
           { text: 'Bekor qilish', style: 'cancel' },
           {
             text: 'Davom etish',
-            onPress: () => {
-              if (video.base64) {
-                console.log('✅ Using base64 from picker');
-                setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${video.base64}` });
-              } else {
-                console.log('❌ Base64 not available from picker');
-                showAlert(t.error, 'Video yuklashda xatolik (base64 mavjud emas)');
-              }
-            }
+            onPress: () => processVideo(video)
           },
         ]
       );
       return;
     }
 
-    if (video.base64) {
-      console.log('✅ Video base64 received, length:', video.base64.length);
-      setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${video.base64}` });
-    } else {
-      console.error('❌ Base64 not available from picker');
-      showAlert(t.error, 'Video yuklashda xatolik (base64 mavjud emas). Iltimos kichikroq video tanlang.');
+    await processVideo(video);
+  };
+
+  const processVideo = async (video: ImagePicker.ImagePickerAsset) => {
+    try {
+      let base64Data: string;
+
+      if (Platform.OS === 'web' && video.base64) {
+        // Web: use base64 from picker
+        console.log('🌐 Using web base64 from picker');
+        base64Data = video.base64;
+      } else if (video.uri) {
+        // Mobile: read file and convert to base64
+        console.log('📱 Reading video file from URI:', video.uri.substring(0, 50));
+        console.log('⏳ This may take a while for large videos...');
+        
+        const fileContent = await FileSystem.readAsStringAsync(video.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('✅ Video file read successfully, size:', Math.round(fileContent.length / 1024), 'KB');
+        base64Data = fileContent;
+      } else {
+        console.error('❌ No base64 or URI available');
+        showAlert(t.error, 'Video yuklashda xatolik');
+        return;
+      }
+
+      setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${base64Data}` });
+      console.log('✅ Video data set successfully');
+    } catch (error) {
+      console.error('❌ Error processing video:', error);
+      showAlert(t.error, `Video yuklashda xatolik: ${(error as Error).message}`);
     }
   };
 
