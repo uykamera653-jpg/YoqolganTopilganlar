@@ -43,6 +43,7 @@ export default function HomeScreen() {
     } else {
       setUserProfile(null);
     }
+    // Load ads immediately on app start
     loadAdvertisements();
   }, [user]);
 
@@ -74,15 +75,17 @@ export default function HomeScreen() {
     }
   }, [ads, currentAdIndex]);
 
-  // Preload next ad media for instant transitions
+  // Preload ALL ad media for instant transitions
   useEffect(() => {
-    if (nextAd && Platform.OS !== 'web') {
-      if (nextAd.type === 'image' && nextAd.media_url) {
-        Image.prefetch(nextAd.media_url);
-        console.log('🔄 Preloading next image:', nextAd.title);
-      }
+    if (ads.length > 0 && Platform.OS !== 'web') {
+      ads.forEach((ad) => {
+        if (ad.type === 'image' && ad.media_url) {
+          Image.prefetch(ad.media_url);
+          console.log('🔄 Preloading image:', ad.id);
+        }
+      });
     }
-  }, [nextAd]);
+  }, [ads]);
 
   // Replay video when ad changes (mobile only) - NO LOADING SPINNER
   useEffect(() => {
@@ -135,10 +138,11 @@ export default function HomeScreen() {
   };
 
   const loadAdvertisements = async () => {
-    console.log('🔄 Loading advertisements (with local cache)...');
+    console.log('🔄 Loading advertisements (instant from cache)...');
     setAdsLoading(true);
     const { data, error } = await advertisementService.getActiveAds();
     console.log('📊 Ads loaded:', { count: data?.length || 0, error });
+    
     if (data && data.length > 0) {
       const firstAd = data[0];
       const isLocalFile = firstAd.media_url?.startsWith('file://');
@@ -149,11 +153,14 @@ export default function HomeScreen() {
         isLocalFile,
         mediaUrlPreview: firstAd.media_url?.substring(0, 80) + '...'
       });
+      
+      // Set ads immediately - NO DELAY
       setAds(data);
+      setAdsLoading(false);
     } else {
       console.log('⚠️ No active ads found');
+      setAdsLoading(false);
     }
-    setAdsLoading(false);
   };
 
   const handleAdPress = (linkUrl: string) => {
@@ -278,12 +285,12 @@ export default function HomeScreen() {
                   source={{ uri: currentAd.media_url }}
                   style={styles.adImage}
                   contentFit="cover"
-                  cachePolicy="memory-disk"
+                  cachePolicy="disk"
                   recyclingKey={currentAd.id}
                   priority="high"
                   placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj' }}
                   placeholderContentFit="cover"
-                  transition={150}
+                  transition={0}
                   onError={(error) => {
                     console.error('❌ Image load error:', currentAd.media_url?.substring(0, 80));
                   }}
