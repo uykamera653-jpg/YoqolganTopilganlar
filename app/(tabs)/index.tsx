@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Video } from 'expo-video';
+import { Video, VideoView } from 'expo-video';
 import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { CategoryButton } from '@/components';
 import { useAuth, getSupabaseClient } from '@/template';
@@ -25,6 +25,7 @@ export default function HomeScreen() {
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [adsLoading, setAdsLoading] = useState(true);
   const adTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -220,34 +221,30 @@ export default function HomeScreen() {
                   console.log('✅ Loaded URL:', currentAd.media_url?.substring(0, 80));
                 }}
               />
-            ) : currentAd.type === 'video' && currentAd.media_url && Video ? (
-              <View style={styles.videoContainer}>
-                <Video
-                  source={{ uri: currentAd.media_url }}
-                  style={styles.video}
-                  useNativeControls={false}
-                  contentFit="contain"
-                  isLooping
-                  shouldPlay
-                  isMuted
-                  onError={(error) => console.error('❌ Video error:', error)}
-                  onLoad={() => console.log('✅ Video loaded')}
-                />
-                <View style={styles.videoOverlay}>
-                  <MaterialIcons name="play-circle-outline" size={64} color="rgba(255,255,255,0.8)" />
-                </View>
-              </View>
             ) : currentAd.type === 'video' && currentAd.media_url ? (
-              <View style={styles.mediaPlaceholder}>
-                <MaterialIcons name="videocam" size={48} color={colors.primary} />
-                <Text style={[styles.adTitle, { color: colors.text }]}>
-                  {currentAd.title}
-                </Text>
-                {currentAd.content && (
-                  <Text style={[styles.adContent, { color: colors.textSecondary }]}>
-                    {currentAd.content}
-                  </Text>
-                )}
+              <View style={styles.videoContainer}>
+                <VideoView
+                  ref={videoRef}
+                  style={styles.video}
+                  player={{
+                    uri: currentAd.media_url,
+                    loop: true,
+                    autoplay: true,
+                    muted: true,
+                  }}
+                  allowsFullscreen
+                  allowsPictureInPicture
+                  nativeControls={true}
+                  contentFit="contain"
+                  onError={(error) => {
+                    console.error('❌ Video error:', error);
+                    console.error('❌ Video URL:', currentAd.media_url);
+                  }}
+                  onLoad={() => {
+                    console.log('✅ Video loaded successfully');
+                    console.log('✅ Video URL:', currentAd.media_url?.substring(0, 80));
+                  }}
+                />
               </View>
             ) : (
               <View style={styles.mediaPlaceholder}>
