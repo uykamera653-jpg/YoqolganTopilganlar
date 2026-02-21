@@ -6,6 +6,46 @@ import { Platform } from 'react-native';
 const supabase = getSupabaseClient();
 
 export const advertisementService = {
+  // Preload all advertisements on app startup (background silent download)
+  async preloadAllAds(): Promise<void> {
+    if (Platform.OS === 'web') return;
+    
+    try {
+      console.log('🚀 [App Startup] Preloading advertisements...');
+      
+      // Fetch active ads from database
+      const { data, error } = await supabase
+        .from('advertisements')
+        .select('*')
+        .eq('is_active', true);
+      
+      if (error || !data) {
+        console.error('❌ [Preload] Database error:', error?.message);
+        return;
+      }
+      
+      console.log(`📦 [Preload] Found ${data.length} ads to preload`);
+      
+      // Download all media files in parallel (background)
+      const downloadPromises = data.map(async (ad) => {
+        if (ad.media_url && (ad.type === 'image' || ad.type === 'video')) {
+          const cachedUri = await this.checkCachedMedia(ad.media_url, ad.id);
+          
+          if (cachedUri) {
+            console.log('✅ [Preload] Already cached:', ad.id);
+          } else {
+            console.log('⬇️ [Preload] Downloading:', ad.id);
+            await this.downloadAndCacheMedia(ad.media_url, ad.id);
+          }
+        }
+      });
+      
+      await Promise.all(downloadPromises);
+      console.log('✅ [Preload] All advertisements preloaded successfully!');
+    } catch (error) {
+      console.error('❌ [Preload] Error:', error);
+    }
+  },
   // Public: Get active advertisements with instant local caching
   async getActiveAds(): Promise<{ data: Advertisement[] | null; error: string | null }> {
     try {
