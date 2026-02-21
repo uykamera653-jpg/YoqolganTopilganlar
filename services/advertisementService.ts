@@ -6,9 +6,10 @@ import { Platform } from 'react-native';
 const supabase = getSupabaseClient();
 
 export const advertisementService = {
-  // Public: Get active advertisements with local caching
+  // Public: Get active advertisements with local caching and auto-refresh
   async getActiveAds(): Promise<{ data: Advertisement[] | null; error: string | null }> {
     try {
+      console.log('🔄 Fetching active ads from database...');
       const { data, error } = await supabase
         .from('advertisements')
         .select('*')
@@ -18,6 +19,8 @@ export const advertisementService = {
       if (error) {
         return { data: null, error: error.message };
       }
+
+      console.log(`📊 Found ${data?.length || 0} active ads`);
 
       // Cache media files locally for instant loading (mobile only)
       if (data && Platform.OS !== 'web') {
@@ -30,6 +33,7 @@ export const advertisementService = {
             return ad;
           })
         );
+        console.log('✅ Ads processed with local cache');
         return { data: cachedAds, error: null };
       }
 

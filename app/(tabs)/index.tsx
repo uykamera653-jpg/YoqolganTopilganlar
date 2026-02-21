@@ -45,6 +45,16 @@ export default function HomeScreen() {
     loadAdvertisements();
   }, [user]);
 
+  // Refresh ads when screen is focused (detects new ads without app rebuild)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing advertisements...');
+      loadAdvertisements();
+    }, 60000); // Refresh every 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (ads.length > 0) {
       // Auto-slide based on current ad's slide_duration
