@@ -1,10 +1,12 @@
 import { getSupabaseClient } from '@/template';
 import { Advertisement, AdvertisementFormData } from '@/types';
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 
 const supabase = getSupabaseClient();
 
 export const advertisementService = {
-  // Public: Get active advertisements
+  // Public: Get active advertisements with local caching
   async getActiveAds(): Promise<{ data: Advertisement[] | null; error: string | null }> {
     try {
       const { data, error } = await supabase
@@ -17,9 +19,80 @@ export const advertisementService = {
         return { data: null, error: error.message };
       }
 
+      // Cache media files locally for instant loading (mobile only)
+      if (data && Platform.OS !== 'web') {
+        const cachedAds = await Promise.all(
+          data.map(async (ad) => {
+            if (ad.media_url && (ad.type === 'image' || ad.type === 'video')) {
+              const localUri = await this.getCachedMedia(ad.media_url, ad.id);
+              return { ...ad, media_url: localUri || ad.media_url };
+            }
+            return ad;
+          })
+        );
+        return { data: cachedAds, error: null };
+      }
+
       return { data, error: null };
     } catch (err) {
       return { data: null, error: (err as Error).message };
+    }
+  },
+
+  // Cache media file locally
+  async getCachedMedia(remoteUrl: string, adId: string): Promise<string | null> {
+    if (Platform.OS === 'web') return null;
+    
+    try {
+      // Extract file extension
+      const urlParts = remoteUrl.split('.');
+      const extension = urlParts[urlParts.length - 1].split('?')[0]; // Remove query params
+      
+      // Create cache directory path
+      const cacheDir = `${FileSystem.cacheDirectory}advertisements/`;
+      const localPath = `${cacheDir}${adId}.${extension}`;
+      
+      // Check if file exists locally
+      const fileInfo = await FileSystem.getInfoAsync(localPath);
+      
+      if (fileInfo.exists) {
+        console.log('✅ [Cache] Using cached media:', adId);
+        return localPath;
+      }
+      
+      // Download and cache
+      console.log('⬇️ [Cache] Downloading media to local storage:', adId);
+      await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+      
+      const downloadResult = await FileSystem.downloadAsync(remoteUrl, localPath);
+      
+      if (downloadResult.status === 200) {
+        console.log('✅ [Cache] Media cached successfully! Path:', localPath);
+        return downloadResult.uri;
+      } else {
+        console.warn('⚠️ [Cache] Download failed:', downloadResult.status);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ [Cache] Error caching media:', error);
+      return null;
+    }
+  },
+
+  // Clear advertisement cache
+  async clearCache(): Promise<void> {
+    if (Platform.OS === 'web') return;
+    
+    try {
+      const cacheDir = `${FileSystem.cacheDirectory}advertisements/`;
+      const dirInfo = await FileSystem.getInfoAsync(cacheDir);
+      
+      if (dirInfo.exists) {
+        await FileSystem.deleteAsync(cacheDir, { idempotent: true });
+        console.log('✅ [Cache] Advertisement cache cleared');
+      }
+    } catch (error) {
+      console.error('❌ [Cache] Error clearing cache:', error);
     }
   },
 

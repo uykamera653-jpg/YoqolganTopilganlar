@@ -119,16 +119,19 @@ export default function HomeScreen() {
   };
 
   const loadAdvertisements = async () => {
-    console.log('🔄 Loading advertisements...');
+    console.log('🔄 Loading advertisements (with local cache)...');
     setAdsLoading(true);
     const { data, error } = await advertisementService.getActiveAds();
     console.log('📊 Ads loaded:', { count: data?.length || 0, error });
     if (data && data.length > 0) {
+      const firstAd = data[0];
+      const isLocalFile = firstAd.media_url?.startsWith('file://');
       console.log('📢 First ad:', {
-        type: data[0].type,
-        title: data[0].title,
-        hasMediaUrl: !!data[0].media_url,
-        mediaUrl: data[0].media_url?.substring(0, 50) + '...'
+        type: firstAd.type,
+        title: firstAd.title,
+        hasMediaUrl: !!firstAd.media_url,
+        isLocalFile,
+        mediaUrlPreview: firstAd.media_url?.substring(0, 80) + '...'
       });
       setAds(data);
     } else {
