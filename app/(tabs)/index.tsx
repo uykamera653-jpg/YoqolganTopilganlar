@@ -274,7 +274,7 @@ export default function HomeScreen() {
               />
             ) : currentAd.type === 'video' && currentAd.media_url ? (
               Platform.OS === 'web' ? (
-                <View style={styles.videoContainer}>
+                <View style={styles.videoContainer} key={`video-${currentAdIndex}-${currentAd.id}`}>
                   {videoLoading && (
                     <View style={styles.videoLoadingOverlay}>
                       <ActivityIndicator size="large" color={colors.primary} />
@@ -282,24 +282,40 @@ export default function HomeScreen() {
                     </View>
                   )}
                   <video
-                    ref={(ref) => { webVideoRef.current = ref; }}
+                    key={currentAd.media_url}
+                    ref={(ref) => { 
+                      webVideoRef.current = ref;
+                      if (ref) {
+                        console.log('🎬 [Web] Video element mounted, URL:', currentAd.media_url.substring(0, 80));
+                      }
+                    }}
                     src={currentAd.media_url}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', backgroundColor: '#000' }}
+                    autoPlay
                     loop
                     muted
                     playsInline
                     preload="auto"
+                    crossOrigin="anonymous"
+                    onLoadedMetadata={(e) => {
+                      console.log('📊 [Web] Video metadata loaded:', {
+                        duration: (e.target as HTMLVideoElement).duration,
+                        width: (e.target as HTMLVideoElement).videoWidth,
+                        height: (e.target as HTMLVideoElement).videoHeight
+                      });
+                    }}
                     onLoadStart={() => {
-                      console.log('⏳ [Web] Video load started');
+                      console.log('⏳ [Web] Video load started:', currentAd.media_url.substring(0, 80));
                       setVideoLoading(true);
                     }}
                     onCanPlay={() => {
                       console.log('✅ [Web] Video ready to play');
                       setVideoLoading(false);
-                      // Auto-play when ready
+                      // Force play
                       if (webVideoRef.current) {
                         webVideoRef.current.play().catch(err => {
-                          console.warn('⚠️ [Web] Autoplay prevented:', err.message);
+                          console.error('⚠️ [Web] Autoplay failed:', err.message);
+                          setVideoLoading(false);
                         });
                       }
                     }}
@@ -310,24 +326,31 @@ export default function HomeScreen() {
                       // @ts-ignore
                       const errorMessage = e.target?.error?.message;
                       console.error('❌ [Web] Video error:', {
-                        url: currentAd.media_url?.substring(0, 80),
+                        url: currentAd.media_url,
                         errorCode,
                         errorMessage,
                         errorCodeMeaning: [
                           '',
-                          'MEDIA_ERR_ABORTED (1): Yuklash to\'xtatildi',
-                          'MEDIA_ERR_NETWORK (2): Tarmoq xatosi',
-                          'MEDIA_ERR_DECODE (3): Codec/format xatosi',
-                          'MEDIA_ERR_SRC_NOT_SUPPORTED (4): Format qo\'llanilmaydi'
-                        ][errorCode] || 'Noma\'lum xato'
+                          'MEDIA_ERR_ABORTED (1): User/Browser aborted',
+                          'MEDIA_ERR_NETWORK (2): Network error',
+                          'MEDIA_ERR_DECODE (3): Codec/format error',
+                          'MEDIA_ERR_SRC_NOT_SUPPORTED (4): Format not supported'
+                        ][errorCode] || 'Unknown error'
                       });
                     }}
-                    onPlaying={() => console.log('▶️ [Web] Video playing')}
+                    onPlaying={() => {
+                      console.log('▶️ [Web] Video is playing');
+                      setVideoLoading(false);
+                    }}
                     onWaiting={() => {
                       console.log('⏸️ [Web] Video buffering...');
                       setVideoLoading(true);
                     }}
-                    onProgress={() => setVideoLoading(false)}
+                    onProgress={() => {
+                      if (videoLoading) setVideoLoading(false);
+                    }}
+                    onStalled={() => console.warn('⚠️ [Web] Video stalled')}
+                    onSuspend={() => console.log('⏸️ [Web] Video suspended')}
                   />
                 </View>
               ) : videoPlayer ? (
