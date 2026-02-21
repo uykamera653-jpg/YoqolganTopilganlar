@@ -25,8 +25,6 @@ export default {
     alreadyHaveAccount: 'Hisobingiz bormi?',
     enterOtp: 'Tasdiqlash kodini kiriting',
     otpSent: 'Tasdiqlash kodi emailingizga yuborildi',
-    otpSpamWarning: 'Agar xabar kelmasa, spam (keraksiz xabarlar) bo\'limini tekshiring!',
-    checkSpamFolder: 'Gmail spam folder\'ni tekshiring',
     verifyAndRegister: 'Tasdiqlash va ro\'yxatdan o\'tish',
     termsAgree: 'Men maxfiylik siyosati va foydalanish shartlarini qabul qilaman',
     termsRequired: 'Maxfiylik siyosati va foydalanish shartlarini qabul qilishingiz shart',

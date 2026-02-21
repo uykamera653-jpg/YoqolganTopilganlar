@@ -25,8 +25,6 @@ export default {
     alreadyHaveAccount: 'Already have an account?',
     enterOtp: 'Enter verification code',
     otpSent: 'Verification code sent to your email',
-    otpSpamWarning: 'If the message does not arrive, check your spam folder!',
-    checkSpamFolder: 'Check Gmail spam folder',
     verifyAndRegister: 'Verify and Register',
     termsAgree: 'I agree to the Privacy Policy and Terms of Service',
     termsRequired: 'You must agree to the Privacy Policy and Terms of Service',
