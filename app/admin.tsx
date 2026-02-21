@@ -44,11 +44,13 @@ export default function AdminScreen() {
     is_active: true,
   });
   const [savingAd, setSavingAd] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
   useEffect(() => {
     console.log('Admin screen - State:', { isAdmin, loading, userEmail: user?.email });
     
-    // Wait for admin check to complete
-    if (!loading) {
+    // Wait for admin check to complete and load data only once
+    if (!loading && !dataLoaded) {
       console.log('Admin screen - Loading complete, isAdmin:', isAdmin);
       
       if (!isAdmin) {
@@ -60,8 +62,9 @@ export default function AdminScreen() {
       
       console.log('Admin screen - User IS admin, loading data');
       loadInitialData();
+      setDataLoaded(true);
     }
-  }, [loading, isAdmin]);
+  }, [loading, isAdmin, dataLoaded]);
 
   const loadInitialData = async () => {
     console.log('Admin - Loading initial data...');
@@ -862,12 +865,24 @@ export default function AdminScreen() {
                 style={[styles.input, { color: colors.text, backgroundColor: colors.background, borderColor: colors.border }]}
                 value={String(adForm.slide_duration)}
                 onChangeText={(text) => {
-                  const duration = parseInt(text) || 5;
-                  setAdForm({ ...adForm, slide_duration: Math.max(1, Math.min(60, duration)) });
+                  // Allow empty input for editing
+                  if (text === '') {
+                    setAdForm({ ...adForm, slide_duration: 5 });
+                    return;
+                  }
+                  
+                  // Only update if valid number
+                  const duration = parseInt(text, 10);
+                  if (!isNaN(duration)) {
+                    // Clamp value between 1 and 60
+                    const clampedDuration = Math.max(1, Math.min(60, duration));
+                    setAdForm({ ...adForm, slide_duration: clampedDuration });
+                  }
                 }}
                 placeholder="5"
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="number-pad"
+                maxLength={2}
               />
               <Text style={[styles.helperText, { color: colors.textSecondary }]}>
                 {t.advertisements.slideDurationHelper}
