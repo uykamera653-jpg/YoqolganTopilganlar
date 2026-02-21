@@ -232,10 +232,10 @@ export default function HomeScreen() {
                     autoplay: true,
                     muted: true,
                   }}
-                  allowsFullscreen
-                  allowsPictureInPicture
-                  nativeControls={true}
-                  contentFit="contain"
+                  allowsFullscreen={false}
+                  allowsPictureInPicture={false}
+                  nativeControls={false}
+                  contentFit="cover"
                   onError={(error) => {
                     console.error('❌ Video error:', error);
                     console.error('❌ Video URL:', currentAd.media_url);
