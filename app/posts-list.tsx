@@ -210,15 +210,16 @@ export default function PostsListScreen() {
         )}
 
         {showRegionFilter && (
-          <TouchableOpacity
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowRegionFilter(false)}
           >
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={{ width: '100%' }}
-            >
+            <TouchableOpacity
+              style={styles.modalBackdrop}
+              activeOpacity={1}
+              onPress={() => setShowRegionFilter(false)}
+            />
+            <View style={styles.modalWrapper}>
               <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
                 <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
                   <Text style={[styles.modalTitle, { color: colors.text }]}>{t.regions.title}</Text>
@@ -275,8 +276,8 @@ export default function PostsListScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </KeyboardAvoidingView>
-          </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
         )}
       </View>
     </>
@@ -338,15 +339,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444',
   },
   modalOverlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'flex-start',
+    paddingTop: 100,
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  modalWrapper: {
+    marginHorizontal: spacing.md,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    maxHeight: '50%',
   },
   modalContent: {
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    maxHeight: '70%',
+    borderRadius: borderRadius.xl,
     paddingBottom: 20,
   },
   modalHeader: {
