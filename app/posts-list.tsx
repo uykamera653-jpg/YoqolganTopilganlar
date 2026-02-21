@@ -20,9 +20,8 @@ export default function PostsListScreen() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const [showRegionFilter, setShowRegionFilter] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState('');
   const [regionSearchText, setRegionSearchText] = useState('');
-  const [manualRegionInput, setManualRegionInput] = useState('');
+  const [activeRegion, setActiveRegion] = useState('');
   const [itemSearchText, setItemSearchText] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
 
@@ -66,8 +65,7 @@ export default function PostsListScreen() {
         break;
     }
 
-    // Filter by region
-    const activeRegion = manualRegionInput.trim() || selectedRegion;
+    // Filter by region (only using activeRegion)
     if (activeRegion) {
       // Try to find region label from predefined list
       const regionLabel = regions.find(r => r.key === activeRegion)?.label;
@@ -79,7 +77,7 @@ export default function PostsListScreen() {
       });
     }
 
-    // Filter by item name/description (using active search query)
+    // Filter by item name/description (only using activeSearchQuery)
     if (activeSearchQuery.trim()) {
       const searchTerm = activeSearchQuery.toLowerCase();
       filtered = filtered.filter(post => {
@@ -133,11 +131,10 @@ export default function PostsListScreen() {
               style={styles.filterButton}
               onPress={() => {
                 setShowRegionFilter(true);
-                setRegionSearchText(manualRegionInput);
               }}
             >
               <MaterialIcons name="filter-list" size={24} color={staticColors.white} />
-              {(selectedRegion || manualRegionInput) && <View style={styles.filterBadge} />}
+              {activeRegion && <View style={styles.filterBadge} />}
             </TouchableOpacity>
           ),
         }}
@@ -227,16 +224,14 @@ export default function PostsListScreen() {
                 <Text style={[styles.modalTitle, { color: colors.text }]}>{t.regions.title}</Text>
                 <View style={styles.headerActions}>
                   <TouchableOpacity
-                    style={[styles.searchButton, { backgroundColor: colors.primary }]}
+                    style={[styles.clearButton, { backgroundColor: colors.textSecondary }]}
                     onPress={() => {
-                      setManualRegionInput(regionSearchText);
-                      setSelectedRegion('');
-                      setShowRegionFilter(false);
+                      setActiveRegion('');
                       setRegionSearchText('');
+                      setShowRegionFilter(false);
                     }}
                   >
-                    <MaterialIcons name="search" size={20} color={staticColors.white} />
-                    <Text style={[styles.searchButtonText, { color: staticColors.white }]}>Qidirish</Text>
+                    <MaterialIcons name="clear" size={20} color={staticColors.white} />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => setShowRegionFilter(false)}>
                     <MaterialIcons name="close" size={24} color={colors.textSecondary} />
@@ -249,14 +244,18 @@ export default function PostsListScreen() {
                   <TextInput
                     style={[styles.searchInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
                     value={regionSearchText}
-                    onChangeText={(text) => {
-                      setRegionSearchText(text);
-                      setManualRegionInput(text);
-                    }}
+                    onChangeText={setRegionSearchText}
                     placeholder={t.postForm.regionPlaceholder}
                     placeholderTextColor={colors.textSecondary}
                     autoFocus
                     returnKeyType="search"
+                    onSubmitEditing={() => {
+                      if (regionSearchText.trim()) {
+                        setActiveRegion(regionSearchText);
+                        setShowRegionFilter(false);
+                        setRegionSearchText('');
+                      }
+                    }}
                   />
                 </View>
               </View>
@@ -267,19 +266,18 @@ export default function PostsListScreen() {
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={[styles.regionItem, { borderBottomColor: colors.border }, (selectedRegion === item.key || manualRegionInput === item.label) && { backgroundColor: colors.primary + '15' }]}
+                    style={[styles.regionItem, { borderBottomColor: colors.border }, (activeRegion === item.key || activeRegion === item.label) && { backgroundColor: colors.primary + '15' }]}
                     onPressIn={() => {
-                      setSelectedRegion(item.key);
-                      setManualRegionInput(item.label);
+                      setActiveRegion(item.key);
                       setShowRegionFilter(false);
                       setRegionSearchText('');
                     }}
                   >
-                    <MaterialIcons name="location-city" size={20} color={(selectedRegion === item.key || manualRegionInput === item.label) ? colors.primary : colors.textSecondary} />
-                    <Text style={[styles.regionItemText, { color: (selectedRegion === item.key || manualRegionInput === item.label) ? colors.primary : colors.text }]}>
+                    <MaterialIcons name="location-city" size={20} color={(activeRegion === item.key || activeRegion === item.label) ? colors.primary : colors.textSecondary} />
+                    <Text style={[styles.regionItemText, { color: (activeRegion === item.key || activeRegion === item.label) ? colors.primary : colors.text }]}>
                       {item.label}
                     </Text>
-                    {(selectedRegion === item.key || manualRegionInput === item.label) && (
+                    {(activeRegion === item.key || activeRegion === item.label) && (
                       <MaterialIcons name="check" size={20} color={colors.primary} />
                     )}
                   </TouchableOpacity>
@@ -372,18 +370,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  searchButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    gap: spacing.xs,
-  },
-  searchButtonText: {
-    fontSize: typography.sm,
-    fontWeight: typography.semibold,
-  },
   searchContainer: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
@@ -401,6 +387,9 @@ const styles = StyleSheet.create({
   clearButton: {
     position: 'absolute',
     right: 60,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
   },
   searchActionButton: {
     position: 'absolute',
