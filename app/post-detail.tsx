@@ -179,23 +179,6 @@ export default function PostDetailScreen() {
           headerShown: true,
           headerStyle: { backgroundColor: staticColors.primary },
           headerTintColor: staticColors.white,
-          headerRight: () => (
-            user && post && user.id !== post.user_id ? (
-              <TouchableOpacity
-                style={{ marginRight: spacing.md }}
-                onPress={async () => {
-                  const { hasReported } = await reportService.hasUserReported(id as string);
-                  if (hasReported) {
-                    showAlert(t.error, t.reports.alreadyReported);
-                  } else {
-                    setShowReportModal(true);
-                  }
-                }}
-              >
-                <MaterialIcons name="flag" size={24} color={staticColors.white} />
-              </TouchableOpacity>
-            ) : null
-          ),
         }}
       />
       <KeyboardAvoidingView
@@ -273,13 +256,48 @@ export default function PostDetailScreen() {
               </View>
 
               {user && post.user_id !== user.id && (
-                <TouchableOpacity
-                  style={[styles.messageButton, { backgroundColor: staticColors.primary }]}
-                  onPress={() => router.push(`/send-message?userId=${post.user_id}&username=${post.user_profiles?.username || t.profile.username}`)}
-                >
-                  <MaterialIcons name="chat" size={20} color={staticColors.white} />
-                  <Text style={[styles.messageButtonText, { color: staticColors.white }]}>Xabar yuborish</Text>
-                </TouchableOpacity>
+                <>
+                  <TouchableOpacity
+                    style={[styles.messageButton, { backgroundColor: staticColors.primary }]}
+                    onPress={() => router.push(`/send-message?userId=${post.user_id}&username=${post.user_profiles?.username || t.profile.username}`)}
+                  >
+                    <MaterialIcons name="chat" size={20} color={staticColors.white} />
+                    <Text style={[styles.messageButtonText, { color: staticColors.white }]}>Xabar yuborish</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.reportButton, { backgroundColor: '#EF4444' }]}
+                    onPress={async () => {
+                      const { hasReported } = await reportService.hasUserReported(id as string);
+                      if (hasReported) {
+                        showAlert(t.error, t.reports.alreadyReported);
+                      } else {
+                        setShowReportModal(true);
+                      }
+                    }}
+                  >
+                    <MaterialIcons name="report" size={22} color={staticColors.white} />
+                    <Text style={[styles.reportButtonText, { color: staticColors.white }]}>{t.reports.reportPost}</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {!user && (
+                <View style={[styles.loginPromptBox, { backgroundColor: staticColors.warning + '15', borderColor: staticColors.warning }]}>                  <MaterialIcons name="info" size={24} color={staticColors.warning} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.loginPromptText, { color: colors.text }]}>
+                      {t.auth.loginRequired}
+                    </Text>
+                    <TouchableOpacity
+                      style={[styles.loginPromptButton, { backgroundColor: staticColors.primary }]}
+                      onPress={() => router.push('/login')}
+                    >
+                      <Text style={{ color: staticColors.white, fontSize: typography.sm, fontWeight: typography.semibold }}>
+                        {t.auth.login}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               )}
 
               <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
@@ -518,6 +536,39 @@ const styles = StyleSheet.create({
     fontSize: typography.base,
     fontWeight: typography.semibold,
     marginLeft: spacing.sm,
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginTop: spacing.sm,
+    ...shadows.sm,
+  },
+  reportButtonText: {
+    fontSize: typography.base,
+    fontWeight: typography.semibold,
+    marginLeft: spacing.sm,
+  },
+  loginPromptBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  loginPromptText: {
+    fontSize: typography.sm,
+    marginBottom: spacing.sm,
+  },
+  loginPromptButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+    alignSelf: 'flex-start',
   },
   commentsSection: {
     marginTop: spacing.md,
