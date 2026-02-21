@@ -257,25 +257,33 @@ export default function AdminScreen() {
 
     // Upload image if it's base64
     if (adForm.type === 'image' && adForm.media_url && adForm.media_url.startsWith('data:')) {
+      console.log('📤 Uploading image to storage...');
       const { url, error } = await advertisementService.uploadImage(adForm.media_url);
       if (error) {
+        console.error('❌ Image upload error:', error);
         setSavingAd(false);
         showAlert(t.error, error);
         return;
       }
       finalMediaUrl = url || '';
+      console.log('✅ Image uploaded, URL:', finalMediaUrl?.substring(0, 80));
     }
 
     // Upload video if it's base64
     if (adForm.type === 'video' && adForm.media_url && adForm.media_url.startsWith('data:')) {
+      console.log('📤 Uploading video to storage...');
       const { url, error } = await advertisementService.uploadVideo(adForm.media_url);
       if (error) {
+        console.error('❌ Video upload error:', error);
         setSavingAd(false);
         showAlert(t.error, error);
         return;
       }
       finalMediaUrl = url || '';
+      console.log('✅ Video uploaded, URL:', finalMediaUrl?.substring(0, 80));
     }
+
+    console.log('💾 Saving ad with final media URL:', finalMediaUrl?.substring(0, 80));
 
     if (editingAd) {
       const { error } = await advertisementService.updateAd(editingAd.id, {
@@ -684,6 +692,12 @@ export default function AdminScreen() {
                       </View>
                     </View>
                   </View>
+
+                  {ad.media_url && (
+                    <Text style={[styles.adMediaInfo, { color: colors.textSecondary }]} numberOfLines={1}>
+                      📎 URL: {ad.media_url.substring(0, 50)}...
+                    </Text>
+                  )}
 
                   {ad.content && (
                     <Text style={[styles.adCardContent, { color: colors.textSecondary }]} numberOfLines={2}>
@@ -1160,6 +1174,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: typography.xs,
     fontWeight: typography.semibold,
+  },
+  adMediaInfo: {
+    fontSize: typography.xs,
+    marginBottom: spacing.xs,
+    fontFamily: 'monospace',
   },
   adCardContent: {
     fontSize: typography.sm,
