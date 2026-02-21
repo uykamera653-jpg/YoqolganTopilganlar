@@ -81,7 +81,7 @@ export default function ProfileScreen() {
   };
 
   const handleHelpContact = () => {
-    Linking.openURL('tel:+998501017695');
+    Linking.openURL('https://t.me/Findosam').catch(err => console.error('Error opening Telegram:', err));
   };
 
   const pickAvatar = async () => {
@@ -377,9 +377,9 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.helpContent}>
               <Text style={[styles.helpTitle, { color: colors.text }]}>{t.profile.helpSupport}</Text>
-              <Text style={[styles.helpPhone, { color: colors.primary }]}>+998 50 101 76 95</Text>
+              <Text style={[styles.helpPhone, { color: colors.primary }]}>Telegram: @Findosam</Text>
             </View>
-            <MaterialIcons name="phone" size={24} color={colors.primary} />
+            <MaterialIcons name="send" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </ScrollView>

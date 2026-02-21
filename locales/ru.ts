@@ -52,9 +52,9 @@ export default {
     lost: 'Потерянные',
     reward: 'С вознаграждением',
     all: 'Все',
-    adSlide1: 'Ваша реклама может быть здесь',
-    adSlide2: 'Свяжитесь с нами',
-    adSlide3: 'Telegram: @Prostaffsam',
+    adSlide1: 'Для предложений и жалоб',
+    adSlide2: 'нажмите здесь',
+    adSlide3: 'Telegram: @Findosam',
   },
   
   // Post Types
