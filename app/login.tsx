@@ -38,7 +38,13 @@ export default function LoginScreen() {
       showAlert(t.error, error);
     } else {
       setOtpSent(true);
-      showAlert(t.success, t.auth.otpSent);
+      // Show success with spam folder reminder
+      const spamReminder = language === 'uz' 
+        ? '✅ Tasdiqlash kodi yuborildi!\n\n📧 Agar email kelmasa, spam/junk papkasini tekshiring.' 
+        : language === 'ru' 
+        ? '✅ Код подтверждения отправлен!\n\n📧 Если письмо не пришло, проверьте папку спам/нежелательные.' 
+        : '✅ Verification code sent!\n\nIf you do not see the email, please check your spam/junk folder.';
+      showAlert(t.success, spamReminder);
     }
   };
 
