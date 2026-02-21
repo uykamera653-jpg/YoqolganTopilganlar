@@ -24,7 +24,9 @@ export default function HomeScreen() {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [adsLoading, setAdsLoading] = useState(true);
+  const [videoLoading, setVideoLoading] = useState(false);
   const adTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const webVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const currentAd = ads[currentAdIndex];
   
@@ -61,38 +63,46 @@ export default function HomeScreen() {
     }
   }, [ads, currentAdIndex]);
 
-  // Replay video when ad changes
+  // Replay video when ad changes (mobile only)
   useEffect(() => {
-    console.log('🎬 Video player effect triggered:', {
-      hasCurrentAd: !!currentAd,
-      adType: currentAd?.type,
-      hasMediaUrl: !!currentAd?.media_url,
-      platform: Platform.OS,
-      hasVideoPlayer: !!videoPlayer
-    });
-
     if (currentAd?.type === 'video' && currentAd?.media_url && Platform.OS !== 'web' && videoPlayer) {
       try {
-        console.log('📹 Replacing video source:', currentAd.media_url.substring(0, 100));
+        console.log('📹 [Mobile] Loading video:', currentAd.media_url.substring(0, 80));
+        setVideoLoading(true);
         videoPlayer.replace(currentAd.media_url);
         videoPlayer.muted = true;
         videoPlayer.loop = true;
         
-        // Small delay to ensure video is loaded before playing
+        // Play after a short delay
         setTimeout(() => {
-          console.log('▶️ Starting video playback');
           videoPlayer.play();
-        }, 100);
+          setVideoLoading(false);
+        }, 200);
       } catch (error) {
-        console.error('❌ Video player error:', error);
+        console.error('❌ [Mobile] Video error:', error);
+        setVideoLoading(false);
       }
-    } else if (currentAd?.type === 'video' && Platform.OS !== 'web') {
-      console.warn('⚠️ Video ad but missing requirements:', {
-        hasMediaUrl: !!currentAd?.media_url,
-        hasPlayer: !!videoPlayer
-      });
     }
   }, [currentAd, videoPlayer]);
+
+  // Web video autoplay handler
+  useEffect(() => {
+    if (currentAd?.type === 'video' && currentAd?.media_url && Platform.OS === 'web') {
+      console.log('🌐 [Web] Preparing video:', currentAd.media_url.substring(0, 80));
+      setVideoLoading(true);
+      
+      // Delay to allow video element to mount
+      setTimeout(() => {
+        if (webVideoRef.current) {
+          webVideoRef.current.load();
+          webVideoRef.current.play().catch(err => {
+            console.warn('⚠️ [Web] Autoplay prevented:', err.message);
+            setVideoLoading(false);
+          });
+        }
+      }, 100);
+    }
+  }, [currentAd]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -261,38 +271,69 @@ export default function HomeScreen() {
             ) : currentAd.type === 'video' && currentAd.media_url ? (
               Platform.OS === 'web' ? (
                 <View style={styles.videoContainer}>
+                  {videoLoading && (
+                    <View style={styles.videoLoadingOverlay}>
+                      <ActivityIndicator size="large" color={colors.primary} />
+                      <Text style={[styles.loadingText, { color: colors.white }]}>Video yuklanmoqda...</Text>
+                    </View>
+                  )}
                   <video
+                    ref={(ref) => { webVideoRef.current = ref; }}
                     src={currentAd.media_url}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    autoPlay
                     loop
                     muted
                     playsInline
                     preload="auto"
-                    onError={(e) => {
-                      console.error('❌ Web video error:', {
-                        url: currentAd.media_url,
-                        error: e,
-                        // @ts-ignore
-                        errorCode: e.target?.error?.code,
-                        // @ts-ignore
-                        errorMessage: e.target?.error?.message
-                      });
+                    onLoadStart={() => {
+                      console.log('⏳ [Web] Video load started');
+                      setVideoLoading(true);
                     }}
-                    onLoadedData={() => {
-                      console.log('✅ Web video loaded successfully:', currentAd.media_url.substring(0, 80));
-                      // Force play for smooth autoplay
-                      // @ts-ignore
-                      const videoElement = document.querySelector(`video[src="${currentAd.media_url}"]`);
-                      if (videoElement) {
-                        // @ts-ignore
-                        videoElement.play().catch(err => console.log('⚠️ Autoplay prevented:', err));
+                    onCanPlay={() => {
+                      console.log('✅ [Web] Video ready to play');
+                      setVideoLoading(false);
+                      // Auto-play when ready
+                      if (webVideoRef.current) {
+                        webVideoRef.current.play().catch(err => {
+                          console.warn('⚠️ [Web] Autoplay prevented:', err.message);
+                        });
                       }
                     }}
+                    onError={(e) => {
+                      setVideoLoading(false);
+                      // @ts-ignore
+                      const errorCode = e.target?.error?.code;
+                      // @ts-ignore
+                      const errorMessage = e.target?.error?.message;
+                      console.error('❌ [Web] Video error:', {
+                        url: currentAd.media_url?.substring(0, 80),
+                        errorCode,
+                        errorMessage,
+                        errorCodeMeaning: [
+                          '',
+                          'MEDIA_ERR_ABORTED (1): Yuklash to\'xtatildi',
+                          'MEDIA_ERR_NETWORK (2): Tarmoq xatosi',
+                          'MEDIA_ERR_DECODE (3): Codec/format xatosi',
+                          'MEDIA_ERR_SRC_NOT_SUPPORTED (4): Format qo\'llanilmaydi'
+                        ][errorCode] || 'Noma\'lum xato'
+                      });
+                    }}
+                    onPlaying={() => console.log('▶️ [Web] Video playing')}
+                    onWaiting={() => {
+                      console.log('⏸️ [Web] Video buffering...');
+                      setVideoLoading(true);
+                    }}
+                    onProgress={() => setVideoLoading(false)}
                   />
                 </View>
               ) : videoPlayer ? (
                 <View style={styles.videoContainer}>
+                  {videoLoading && (
+                    <View style={styles.videoLoadingOverlay}>
+                      <ActivityIndicator size="large" color={colors.primary} />
+                      <Text style={[styles.loadingText, { color: colors.white }]}>Video yuklanmoqda...</Text>
+                    </View>
+                  )}
                   <VideoView
                     player={videoPlayer}
                     style={styles.video}
@@ -301,8 +342,9 @@ export default function HomeScreen() {
                     allowsFullscreen={false}
                     allowsPictureInPicture={false}
                     onError={(error) => {
-                      console.error('❌ VideoView error:', error);
+                      console.error('❌ [Mobile] VideoView error:', error);
                       console.error('Video URL:', currentAd.media_url?.substring(0, 80));
+                      setVideoLoading(false);
                     }}
                   />
                 </View>
@@ -492,7 +534,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  videoOverlay: {
+  videoLoadingOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -500,7 +542,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    zIndex: 10,
+    gap: spacing.sm,
+  },
+  loadingText: {
+    fontSize: typography.sm,
+    fontWeight: typography.semibold,
   },
   adTitle: {
     fontSize: typography.xxl,
