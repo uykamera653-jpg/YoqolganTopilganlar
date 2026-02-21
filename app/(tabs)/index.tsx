@@ -178,7 +178,7 @@ export default function HomeScreen() {
             onPress={() => handleAdPress(currentAd.link_url)}
             activeOpacity={0.8}
           >
-            {currentAd.type === 'video' && currentAd.media_url ? (
+            {currentAd.type === 'video' && currentAd.media_url && Video ? (
               <View style={styles.videoContainer}>
                 <Video
                   source={{ uri: currentAd.media_url }}
@@ -192,6 +192,18 @@ export default function HomeScreen() {
                 <View style={styles.videoOverlay}>
                   <MaterialIcons name="play-circle-outline" size={64} color="rgba(255,255,255,0.8)" />
                 </View>
+              </View>
+            ) : currentAd.type === 'video' && currentAd.media_url ? (
+              <View style={styles.mediaPlaceholder}>
+                <MaterialIcons name="videocam" size={48} color={colors.primary} />
+                <Text style={[styles.adTitle, { color: colors.text }]}>
+                  {currentAd.title}
+                </Text>
+                {currentAd.content && (
+                  <Text style={[styles.adContent, { color: colors.textSecondary }]}>
+                    {currentAd.content}
+                  </Text>
+                )}
               </View>
             ) : (
               <View style={styles.mediaPlaceholder}>
