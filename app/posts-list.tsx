@@ -20,10 +20,11 @@ export default function PostsListScreen() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const [showRegionFilter, setShowRegionFilter] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState(region || '');
+  const [selectedRegion, setSelectedRegion] = useState('');
   const [regionSearchText, setRegionSearchText] = useState('');
   const [manualRegionInput, setManualRegionInput] = useState('');
   const [itemSearchText, setItemSearchText] = useState('');
+  const [activeSearchQuery, setActiveSearchQuery] = useState('');
 
   const regions = [
     { key: '', label: t.regions.all },
@@ -78,9 +79,9 @@ export default function PostsListScreen() {
       });
     }
 
-    // Filter by item name/description
-    if (itemSearchText.trim()) {
-      const searchTerm = itemSearchText.toLowerCase();
+    // Filter by item name/description (using active search query)
+    if (activeSearchQuery.trim()) {
+      const searchTerm = activeSearchQuery.toLowerCase();
       filtered = filtered.filter(post => {
         const titleMatch = post.title.toLowerCase().includes(searchTerm);
         const descriptionMatch = post.description.toLowerCase().includes(searchTerm);
@@ -152,13 +153,25 @@ export default function PostsListScreen() {
               placeholder={t.search.itemName}
               placeholderTextColor={colors.textSecondary}
               returnKeyType="search"
+              onSubmitEditing={() => setActiveSearchQuery(itemSearchText)}
             />
             {itemSearchText.length > 0 && (
               <TouchableOpacity
                 style={styles.clearButton}
-                onPress={() => setItemSearchText('')}
+                onPress={() => {
+                  setItemSearchText('');
+                  setActiveSearchQuery('');
+                }}
               >
                 <MaterialIcons name="close" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+            {itemSearchText.length > 0 && (
+              <TouchableOpacity
+                style={[styles.searchActionButton, { backgroundColor: colors.primary }]}
+                onPress={() => setActiveSearchQuery(itemSearchText)}
+              >
+                <MaterialIcons name="search" size={20} color={staticColors.white} />
               </TouchableOpacity>
             )}
           </View>
@@ -174,8 +187,8 @@ export default function PostsListScreen() {
               {t.search.noPostsFound}
             </Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-              {itemSearchText ? 
-                `"${itemSearchText}" ${t.search.noResultsFor}` :
+              {activeSearchQuery ? 
+                `"${activeSearchQuery}" ${t.search.noResultsFor}` :
                 t.search.noCategoryPosts
               }
             </Text>
@@ -381,13 +394,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: borderRadius.md,
     paddingLeft: spacing.xl + spacing.md,
-    paddingRight: spacing.xl + spacing.md,
+    paddingRight: 100,
     paddingVertical: spacing.sm,
     fontSize: typography.base,
   },
   clearButton: {
     position: 'absolute',
+    right: 60,
+  },
+  searchActionButton: {
+    position: 'absolute',
     right: spacing.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
   },
   searchInputWrapper: {
     flexDirection: 'row',
