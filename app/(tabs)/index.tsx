@@ -268,11 +268,21 @@ export default function HomeScreen() {
                     loop
                     muted
                     playsInline
+                    controls
+                    preload="metadata"
                     onError={(e) => {
-                      console.error('❌ Web video error:', currentAd.media_url);
-                      console.error('Error details:', e);
+                      console.error('❌ Web video error:', {
+                        url: currentAd.media_url,
+                        error: e,
+                        // @ts-ignore
+                        errorCode: e.target?.error?.code,
+                        // @ts-ignore
+                        errorMessage: e.target?.error?.message
+                      });
                     }}
-                    onLoadedData={() => console.log('✅ Web video loaded:', currentAd.media_url.substring(0, 80))}
+                    onLoadStart={() => console.log('⏳ Video loading started:', currentAd.media_url.substring(0, 80))}
+                    onLoadedData={() => console.log('✅ Web video loaded successfully:', currentAd.media_url.substring(0, 80))}
+                    onCanPlay={() => console.log('▶️ Video ready to play')}
                   />
                 </View>
               ) : videoPlayer ? (
