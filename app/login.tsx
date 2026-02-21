@@ -33,14 +33,10 @@ export default function LoginScreen() {
       return;
     }
 
-    console.log('📧 [OTP] Yuborish boshlandi, email:', email);
     const { error } = await sendOTP(email);
-    
     if (error) {
-      console.error('❌ [OTP] Xatolik:', error);
       showAlert(t.error, error);
     } else {
-      console.log('✅ [OTP] Muvaffaqiyatli yuborildi!');
       setOtpSent(true);
       showAlert(t.success, t.auth.otpSent);
     }
