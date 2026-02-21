@@ -237,4 +237,38 @@ export default {
     linkSent: 'Password reset link has been sent to your email. Please check your email.',
     passwordUpdated: 'Password successfully updated!',
   },
+
+  // Reports
+  reports: {
+    title: 'Reports',
+    submitReport: 'Submit Report',
+    reportPost: 'Report Post',
+    reason: 'Reason',
+    reasonPlaceholder: 'Why are you reporting this?',
+    category: 'Category',
+    categories: {
+      inappropriate_content: 'Inappropriate Content',
+      spam: 'Spam',
+      false_information: 'False Information',
+      harassment: 'Harassment',
+      other: 'Other',
+    },
+    status: {
+      pending: 'Pending',
+      reviewed: 'Reviewed',
+      resolved: 'Resolved',
+      dismissed: 'Dismissed',
+    },
+    alreadyReported: 'You have already reported this post',
+    reportSubmitted: 'Report submitted and will be reviewed',
+    noReports: 'No reports yet',
+    viewPost: 'View Post',
+    markAsReviewed: 'Mark as Reviewed',
+    markAsResolved: 'Mark as Resolved',
+    markAsDismissed: 'Dismiss',
+    adminNote: 'Admin Note',
+    deletePost: 'Delete Post',
+    confirmDeletePost: 'Delete the reported post?',
+    postDeletedSuccess: 'Post deleted',
+  },
 };

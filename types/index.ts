@@ -57,3 +57,27 @@ export interface UserProfile {
   avatar_url?: string;
   is_admin: boolean;
 }
+
+export interface Report {
+  id: string;
+  post_id: string;
+  reporter_id: string;
+  reason: string;
+  category: 'inappropriate_content' | 'spam' | 'false_information' | 'harassment' | 'other';
+  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+  admin_note?: string;
+  created_at: string;
+  posts?: {
+    title: string;
+    type: string;
+  };
+  user_profiles?: {
+    username: string;
+  };
+}
+
+export interface ReportFormData {
+  post_id: string;
+  reason: string;
+  category: 'inappropriate_content' | 'spam' | 'false_information' | 'harassment' | 'other';
+}

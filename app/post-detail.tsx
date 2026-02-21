@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Linking, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { staticColors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { postService } from '@/services/postService';
+import { reportService } from '@/services/reportService';
 import { Post, Comment } from '@/types';
 import { useAuth, useAlert } from '@/template';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,6 +25,10 @@ export default function PostDetailScreen() {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportCategory, setReportCategory] = useState<'inappropriate_content' | 'spam' | 'false_information' | 'harassment' | 'other'>('inappropriate_content');
+  const [reportLoading, setReportLoading] = useState(false);
 
   useEffect(() => {
     loadPostAndComments();
@@ -88,6 +93,53 @@ export default function PostDetailScreen() {
     Linking.openURL(`tel:${phone}`);
   };
 
+  const handleReportPost = async () => {
+    if (!user) {
+      showAlert(t.error, t.auth.loginRequired, [
+        { text: t.cancel, style: 'cancel' },
+        { text: t.auth.login, onPress: () => router.push('/login') },
+      ]);
+      return;
+    }
+
+    if (!reportReason.trim()) {
+      showAlert(t.error, t.errors.fillAllFields);
+      return;
+    }
+
+    setReportLoading(true);
+
+    const { success, error } = await reportService.submitReport({
+      post_id: id as string,
+      reason: reportReason.trim(),
+      category: reportCategory,
+    });
+
+    setReportLoading(false);
+
+    if (success) {
+      showAlert(t.success, t.reports.reportSubmitted);
+      setShowReportModal(false);
+      setReportReason('');
+      setReportCategory('inappropriate_content');
+    } else {
+      showAlert(t.error, error || t.errors.generic);
+    }
+  };
+
+  const checkIfUserReported = async () => {
+    if (!user) return;
+    
+    const { hasReported } = await reportService.hasUserReported(id as string);
+    if (hasReported) {
+      // User has already reported, disable report button
+    }
+  };
+
+  useEffect(() => {
+    checkIfUserReported();
+  }, [user, id]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('uz-UZ', { 
@@ -121,12 +173,29 @@ export default function PostDetailScreen() {
 
   return (
     <>
-      <Stack.Screen
+          <Stack.Screen
         options={{
           title: 'E\'lon',
           headerShown: true,
           headerStyle: { backgroundColor: staticColors.primary },
           headerTintColor: staticColors.white,
+          headerRight: () => (
+            user && post && user.id !== post.user_id ? (
+              <TouchableOpacity
+                style={{ marginRight: spacing.md }}
+                onPress={async () => {
+                  const { hasReported } = await reportService.hasUserReported(id as string);
+                  if (hasReported) {
+                    showAlert(t.error, t.reports.alreadyReported);
+                  } else {
+                    setShowReportModal(true);
+                  }
+                }}
+              >
+                <MaterialIcons name="flag" size={24} color={staticColors.white} />
+              </TouchableOpacity>
+            ) : null
+          ),
         }}
       />
       <KeyboardAvoidingView
@@ -275,6 +344,83 @@ export default function PostDetailScreen() {
             </View>
           </View>
         </ScrollView>
+
+        {/* Report Modal */}
+        <Modal
+          visible={showReportModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowReportModal(false)}
+        >
+          <KeyboardAvoidingView
+            style={styles.modalOverlay}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{t.reports.reportPost}</Text>
+                <TouchableOpacity onPress={() => setShowReportModal(false)}>
+                  <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.modalBody}>
+                <Text style={[styles.label, { color: colors.text }]}>{t.reports.category}</Text>
+                <View style={styles.categoryGrid}>
+                  {(['inappropriate_content', 'spam', 'false_information', 'harassment', 'other'] as const).map((cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      style={[
+                        styles.categoryChip,
+                        { backgroundColor: colors.background, borderColor: colors.border },
+                        reportCategory === cat && { backgroundColor: staticColors.primary, borderColor: staticColors.primary },
+                      ]}
+                      onPress={() => setReportCategory(cat)}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryChipText,
+                          { color: colors.text },
+                          reportCategory === cat && { color: staticColors.white },
+                        ]}
+                      >
+                        {t.reports.categories[cat]}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={[styles.label, { color: colors.text, marginTop: spacing.md }]}>{t.reports.reason}</Text>
+                <TextInput
+                  style={[styles.textArea, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                  value={reportReason}
+                  onChangeText={setReportReason}
+                  placeholder={t.reports.reasonPlaceholder}
+                  placeholderTextColor={colors.textSecondary}
+                  multiline
+                  numberOfLines={4}
+                />
+
+                <TouchableOpacity
+                  style={[styles.submitReportButton, { backgroundColor: staticColors.primary }, reportLoading && styles.submitReportButtonDisabled]}
+                  onPress={handleReportPost}
+                  disabled={reportLoading}
+                >
+                  {reportLoading ? (
+                    <ActivityIndicator color={staticColors.white} />
+                  ) : (
+                    <>
+                      <MaterialIcons name="flag" size={20} color={staticColors.white} />
+                      <Text style={[styles.submitReportButtonText, { color: staticColors.white }]}>
+                        {t.reports.submitReport}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
       </KeyboardAvoidingView>
     </>
   );
@@ -445,6 +591,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sendButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: typography.lg,
+    fontWeight: typography.bold,
+  },
+  modalBody: {
+    padding: spacing.md,
+  },
+  label: {
+    fontSize: typography.base,
+    fontWeight: typography.semibold,
+    marginBottom: spacing.sm,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  categoryChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  categoryChipText: {
+    fontSize: typography.sm,
+    fontWeight: typography.medium,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: typography.base,
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  submitReportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  submitReportButtonText: {
+    fontSize: typography.base,
+    fontWeight: typography.semibold,
+  },
+  submitReportButtonDisabled: {
     opacity: 0.6,
   },
 });

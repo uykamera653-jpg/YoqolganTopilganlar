@@ -237,4 +237,38 @@ export default {
     linkSent: 'Ссылка для сброса пароля отправлена на ваш email. Пожалуйста, проверьте почту.',
     passwordUpdated: 'Пароль успешно обновлен!',
   },
+
+  // Reports
+  reports: {
+    title: 'Жалобы',
+    submitReport: 'Отправить жалобу',
+    reportPost: 'Пожаловаться на объявление',
+    reason: 'Причина',
+    reasonPlaceholder: 'Почему вы жалуетесь?',
+    category: 'Категория',
+    categories: {
+      inappropriate_content: 'Неприемлемый контент',
+      spam: 'Спам',
+      false_information: 'Ложная информация',
+      harassment: 'Преследование',
+      other: 'Другое',
+    },
+    status: {
+      pending: 'Ожидание',
+      reviewed: 'Проверено',
+      resolved: 'Решено',
+      dismissed: 'Отклонено',
+    },
+    alreadyReported: 'Вы уже пожаловались на это объявление',
+    reportSubmitted: 'Жалоба отправлена и будет рассмотрена',
+    noReports: 'Пока нет жалоб',
+    viewPost: 'Посмотреть объявление',
+    markAsReviewed: 'Отметить как проверенное',
+    markAsResolved: 'Отметить как решенное',
+    markAsDismissed: 'Отклонить',
+    adminNote: 'Заметка администратора',
+    deletePost: 'Удалить объявление',
+    confirmDeletePost: 'Удалить объявление с жалобой?',
+    postDeletedSuccess: 'Объявление удалено',
+  },
 };

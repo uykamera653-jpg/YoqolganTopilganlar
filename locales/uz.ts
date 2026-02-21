@@ -237,4 +237,38 @@ export default {
     linkSent: 'Parolni tiklash havolasi emailingizga yuborildi. Iltimos, emailni tekshiring.',
     passwordUpdated: 'Parol muvaffaqiyatli yangilandi!',
   },
+
+  // Reports
+  reports: {
+    title: 'Shikoyatlar',
+    submitReport: 'Shikoyat yuborish',
+    reportPost: 'E\'londan shikoyat qilish',
+    reason: 'Sabab',
+    reasonPlaceholder: 'Nima uchun shikoyat qilyapsiz?',
+    category: 'Kategoriya',
+    categories: {
+      inappropriate_content: 'Nomaqbul kontent',
+      spam: 'Spam',
+      false_information: 'Noto\'g\'ri ma\'lumot',
+      harassment: 'Ta\'qib qilish',
+      other: 'Boshqa',
+    },
+    status: {
+      pending: 'Kutilmoqda',
+      reviewed: 'Ko\'rib chiqildi',
+      resolved: 'Hal qilindi',
+      dismissed: 'Rad etildi',
+    },
+    alreadyReported: 'Siz bu e\'londan allaqachon shikoyat qilgansiz',
+    reportSubmitted: 'Shikoyat yuborildi va ko\'rib chiqiladi',
+    noReports: 'Hozircha shikoyatlar yo\'q',
+    viewPost: 'E\'lonni ko\'rish',
+    markAsReviewed: 'Ko\'rib chiqildi deb belgilash',
+    markAsResolved: 'Hal qilindi deb belgilash',
+    markAsDismissed: 'Rad etish',
+    adminNote: 'Admin izohi',
+    deletePost: 'E\'lonni o\'chirish',
+    confirmDeletePost: 'Shikoyat qilingan e\'lonni o\'chirish kerakmi?',
+    postDeletedSuccess: 'E\'lon o\'chirildi',
+  },
 };
