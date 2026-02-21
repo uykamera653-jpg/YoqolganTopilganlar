@@ -210,74 +210,76 @@ export default function PostsListScreen() {
         )}
 
         {showRegionFilter && (
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalOverlay}
-          >
+          <View style={styles.modalOverlay}>
             <TouchableOpacity
               style={styles.modalBackdrop}
               activeOpacity={1}
               onPress={() => setShowRegionFilter(false)}
             />
-            <View style={styles.modalWrapper}>
-              <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-                <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                  <Text style={[styles.modalTitle, { color: colors.text }]}>{t.regions.title}</Text>
-                  <TouchableOpacity onPress={() => setShowRegionFilter(false)}>
-                    <MaterialIcons name="close" size={24} color={colors.textSecondary} />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.searchContainer}>
-                  <View style={styles.searchInputWrapper}>
-                    <MaterialIcons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-                    <TextInput
-                      style={[styles.searchInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
-                      value={regionSearchText}
-                      onChangeText={setRegionSearchText}
-                      placeholder={t.postForm.regionPlaceholder}
-                      placeholderTextColor={colors.textSecondary}
-                      autoFocus
-                      returnKeyType="search"
-                      onSubmitEditing={() => {
-                        if (regionSearchText.trim()) {
-                          setActiveRegion(regionSearchText);
-                          setShowRegionFilter(false);
-                          setRegionSearchText('');
-                        }
-                      }}
-                    />
-                    {regionSearchText.length > 0 && (
-                      <TouchableOpacity
-                        style={[styles.searchActionButton, { backgroundColor: colors.primary }]}
-                        onPress={() => {
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.modalWrapper}
+            >
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+                <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+                  <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.modalTitle, { color: colors.text }]}>{t.regions.title}</Text>
+                    <TouchableOpacity onPress={() => setShowRegionFilter(false)}>
+                      <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.searchContainer}>
+                    <View style={styles.searchInputWrapper}>
+                      <MaterialIcons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+                      <TextInput
+                        style={[styles.searchInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                        value={regionSearchText}
+                        onChangeText={setRegionSearchText}
+                        placeholder={t.postForm.regionPlaceholder}
+                        placeholderTextColor={colors.textSecondary}
+                        autoFocus
+                        returnKeyType="search"
+                        onSubmitEditing={() => {
                           if (regionSearchText.trim()) {
                             setActiveRegion(regionSearchText);
                             setShowRegionFilter(false);
                             setRegionSearchText('');
                           }
                         }}
-                      >
-                        <MaterialIcons name="search" size={20} color={staticColors.white} />
-                      </TouchableOpacity>
-                    )}
+                      />
+                      {regionSearchText.length > 0 && (
+                        <TouchableOpacity
+                          style={[styles.searchActionButton, { backgroundColor: colors.primary }]}
+                          onPress={() => {
+                            if (regionSearchText.trim()) {
+                              setActiveRegion(regionSearchText);
+                              setShowRegionFilter(false);
+                              setRegionSearchText('');
+                            }
+                          }}
+                        >
+                          <MaterialIcons name="search" size={20} color={staticColors.white} />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={[styles.clearRegionButton, { backgroundColor: colors.textSecondary }]}
+                      onPress={() => {
+                        setActiveRegion('');
+                        setRegionSearchText('');
+                        setShowRegionFilter(false);
+                      }}
+                    >
+                      <MaterialIcons name="clear" size={20} color={staticColors.white} />
+                      <Text style={styles.clearRegionButtonText}>{language === 'uz' ? 'Tozalash' : language === 'ru' ? 'Очистить' : 'Clear'}</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={[styles.clearRegionButton, { backgroundColor: colors.textSecondary }]}
-                    onPress={() => {
-                      setActiveRegion('');
-                      setRegionSearchText('');
-                      setShowRegionFilter(false);
-                    }}
-                  >
-                    <MaterialIcons name="clear" size={20} color={staticColors.white} />
-                    <Text style={styles.clearRegionButtonText}>{language === 'uz' ? 'Tozalash' : language === 'ru' ? 'Очистить' : 'Clear'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
+              </TouchableOpacity>
+            </KeyboardAvoidingView>
+          </View>
         )}
       </View>
     </>
@@ -360,6 +362,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
     maxHeight: '50%',
+    width: undefined,
   },
   modalContent: {
     borderRadius: borderRadius.xl,
