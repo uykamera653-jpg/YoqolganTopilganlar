@@ -267,6 +267,14 @@ export default function LoginScreen() {
               <Text style={[styles.otpInfo, { color: colors.textSecondary }]}>
                 {t.auth.otpSent}
               </Text>
+              
+              <View style={[styles.spamWarning, { backgroundColor: colors.warning + '10', borderColor: colors.warning + '30' }]}>
+                <MaterialIcons name="info" size={20} color={colors.warning} />
+                <Text style={[styles.spamWarningText, { color: colors.text }]}>
+                  {t.auth.otpSpamWarning}
+                </Text>
+              </View>
+
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 value={otp}
@@ -473,5 +481,19 @@ const styles = StyleSheet.create({
   languageButtonText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  spamWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 12,
+    gap: 8,
+  },
+  spamWarningText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });
