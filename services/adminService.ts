@@ -86,24 +86,33 @@ export const adminService = {
 
   async checkIsAdmin(): Promise<{ isAdmin: boolean; error: string | null }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get current session to ensure we have fresh user data
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
+      if (!session || !session.user) {
         return { isAdmin: false, error: null };
       }
 
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('is_admin')
-        .eq('id', user.id)
+        .select('is_admin, email')
+        .eq('id', session.user.id)
         .single();
 
       if (error) {
+        console.error('Admin check error:', error.message);
         return { isAdmin: false, error: error.message };
       }
 
-      return { isAdmin: data?.is_admin || false, error: null };
+      console.log('Admin check result:', {
+        userId: session.user.id,
+        email: data?.email,
+        isAdmin: data?.is_admin
+      });
+
+      return { isAdmin: data?.is_admin === true, error: null };
     } catch (err) {
+      console.error('Admin check exception:', err);
       return { isAdmin: false, error: (err as Error).message };
     }
   },

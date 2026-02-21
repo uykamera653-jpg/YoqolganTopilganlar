@@ -45,16 +45,21 @@ export default function AdminScreen() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
 
   useEffect(() => {
-    // Wait for admin check to complete
+    console.log('Admin screen - State:', { isAdmin, loading, checkingAdmin, userEmail: user?.email });
+    
+    // Wait for initial admin check to complete
     if (!loading && checkingAdmin) {
+      console.log('Admin screen - Initial check complete');
       setCheckingAdmin(false);
       
       if (!isAdmin) {
+        console.log('Admin screen - User is NOT admin, showing error and going back');
         showAlert(t.error, 'Sizda admin huquqlari yo\'q');
         router.back();
         return;
       }
       
+      console.log('Admin screen - User IS admin, loading data');
       loadStats();
       loadUsers();
       loadReports();
