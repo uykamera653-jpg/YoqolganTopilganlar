@@ -40,6 +40,7 @@ export default function AdminScreen() {
     media_url: '',
     link_url: '',
     display_order: 0,
+    slide_duration: 5,
     is_active: true,
   });
   const [savingAd, setSavingAd] = useState(false);
@@ -167,6 +168,7 @@ export default function AdminScreen() {
         media_url: ad.media_url || '',
         link_url: ad.link_url,
         display_order: ad.display_order,
+        slide_duration: ad.slide_duration || 5,
         is_active: ad.is_active,
       });
     } else {
@@ -178,6 +180,7 @@ export default function AdminScreen() {
         media_url: '',
         link_url: '',
         display_order: ads.length,
+        slide_duration: 5,
         is_active: true,
       });
     }
@@ -194,6 +197,7 @@ export default function AdminScreen() {
       media_url: '',
       link_url: '',
       display_order: 0,
+      slide_duration: 5,
       is_active: true,
     });
   };
@@ -837,6 +841,24 @@ export default function AdminScreen() {
                 placeholderTextColor={colors.textSecondary}
               />
 
+              <Text style={[styles.inputLabel, { color: colors.text }]}>
+                {t.advertisements.slideDuration}
+              </Text>
+              <TextInput
+                style={[styles.input, { color: colors.text, backgroundColor: colors.background, borderColor: colors.border }]}
+                value={String(adForm.slide_duration)}
+                onChangeText={(text) => {
+                  const duration = parseInt(text) || 5;
+                  setAdForm({ ...adForm, slide_duration: Math.max(1, Math.min(60, duration)) });
+                }}
+                placeholder="5"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="number-pad"
+              />
+              <Text style={[styles.helperText, { color: colors.textSecondary }]}>
+                {t.advertisements.slideDurationHelper}
+              </Text>
+
               <View style={styles.switchRow}>
                 <Text style={[styles.inputLabel, { color: colors.text }]}>{t.advertisements.isActive}</Text>
                 <Switch
@@ -1276,5 +1298,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: typography.base,
     fontWeight: typography.semibold,
+  },
+  helperText: {
+    fontSize: typography.xs,
+    marginTop: spacing.xs,
+    fontStyle: 'italic',
   },
 });

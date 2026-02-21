@@ -255,6 +255,8 @@ export default {
     linkUrl: 'URL ссылки',
     displayOrder: 'Порядок отображения',
     isActive: 'Активно',
+    slideDuration: 'Длительность слайда (в секундах)',
+    slideDurationHelper: 'Время показа перед переходом к следующей рекламе (1-60 секунд)',
     createAd: 'Создать рекламу',
     editAd: 'Редактировать рекламу',
     deleteAd: 'Удалить рекламу',

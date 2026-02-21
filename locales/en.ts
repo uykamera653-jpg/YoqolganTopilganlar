@@ -255,6 +255,8 @@ export default {
     linkUrl: 'Link URL',
     displayOrder: 'Display Order',
     isActive: 'Active',
+    slideDuration: 'Slide Duration (seconds)',
+    slideDurationHelper: 'Display time before moving to next ad (1-60 seconds)',
     createAd: 'Create Ad',
     editAd: 'Edit Ad',
     deleteAd: 'Delete Ad',

@@ -255,6 +255,8 @@ export default {
     linkUrl: 'Silka URL',
     displayOrder: 'Tartib raqami',
     isActive: 'Faol',
+    slideDuration: 'Slayt vaqti (soniyalarda)',
+    slideDurationHelper: 'Keyingi reklamaga o\'tishdan oldin ko\'rsatish vaqti (1-60 soniya)',
     createAd: 'Reklama yaratish',
     editAd: 'Reklamani tahrirlash',
     deleteAd: 'Reklamani o\'chirish',

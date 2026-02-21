@@ -36,11 +36,13 @@ export default function HomeScreen() {
   }, [user]);
 
   useEffect(() => {
-    if (ads.length > 0) {
-      // Auto-slide every 5 seconds
+    if (ads.length > 0 && currentAd) {
+      // Auto-slide based on current ad's slide_duration
+      const duration = (currentAd.slide_duration || 5) * 1000; // Convert to milliseconds
+      
       adTimerRef.current = setInterval(() => {
         setCurrentAdIndex((prevIndex) => (prevIndex + 1) % ads.length);
-      }, 5000);
+      }, duration);
 
       return () => {
         if (adTimerRef.current) {
@@ -48,7 +50,7 @@ export default function HomeScreen() {
         }
       };
     }
-  }, [ads.length]);
+  }, [ads.length, currentAdIndex, currentAd]);
 
   const fetchUserProfile = async () => {
     if (!user) return;

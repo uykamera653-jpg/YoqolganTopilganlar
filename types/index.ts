@@ -91,6 +91,7 @@ export interface Advertisement {
   link_url: string;
   is_active: boolean;
   display_order: number;
+  slide_duration: number; // Duration in seconds
   created_at: string;
 }
 
@@ -101,4 +102,5 @@ export interface AdvertisementFormData {
   media_url?: string;
   link_url: string;
   display_order?: number;
+  slide_duration?: number; // Duration in seconds
 }
