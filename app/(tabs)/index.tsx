@@ -267,24 +267,25 @@ export default function HomeScreen() {
             activeOpacity={0.8}
           >
             {currentAd.type === 'image' && currentAd.media_url ? (
-              <Image
-                source={{ uri: currentAd.media_url }}
-                style={styles.adImage}
-                contentFit="cover"
-                cachePolicy="disk"
-                recyclingKey={currentAd.id}
-                priority="high"
-                allowDownscaling={false}
-                placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
-                placeholderContentFit="cover"
-                transition={0}
-                onError={(error) => {
-                  console.error('❌ Image load error:', currentAd.media_url?.substring(0, 80));
-                  console.error('Error details:', error);
-                }}
-                onLoadStart={() => console.log('⏳ Image loading started:', currentAd.media_url?.substring(0, 80))}
-                onLoad={() => console.log('✅ Image loaded successfully (instant from cache):', currentAd.media_url?.substring(0, 80))}
-              />
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: currentAd.media_url }}
+                  style={styles.adImage}
+                  contentFit="cover"
+                  cachePolicy="disk"
+                  recyclingKey={currentAd.id}
+                  priority="high"
+                  placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj' }}
+                  placeholderContentFit="cover"
+                  transition={200}
+                  onError={(error) => {
+                    console.error('❌ Image load error:', currentAd.media_url?.substring(0, 80));
+                    console.error('Error details:', error);
+                  }}
+                  onLoadStart={() => console.log('⏳ Image loading started:', currentAd.media_url?.substring(0, 80))}
+                  onLoad={() => console.log('✅ Image loaded successfully:', currentAd.media_url?.substring(0, 80))}
+                />
+              </View>
             ) : currentAd.type === 'video' && currentAd.media_url ? (
               Platform.OS === 'web' ? (
                 <View style={styles.videoContainer} key={`video-${currentAdIndex}-${currentAd.id}`}>
@@ -625,9 +626,16 @@ const styles = StyleSheet.create({
   adFooterText: {
     fontSize: typography.sm,
   },
-  adImage: {
+  imageContainer: {
     width: '100%',
     height: 250,
+    backgroundColor: '#6366F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adImage: {
+    width: '100%',
+    height: '100%',
   },
   warningCard: {
     marginHorizontal: spacing.md,
