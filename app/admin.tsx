@@ -865,18 +865,24 @@ export default function AdminScreen() {
                 style={[styles.input, { color: colors.text, backgroundColor: colors.background, borderColor: colors.border }]}
                 value={String(adForm.slide_duration)}
                 onChangeText={(text) => {
-                  // Allow empty input for editing
-                  if (text === '') {
-                    setAdForm({ ...adForm, slide_duration: 5 });
+                  // Allow only numeric input
+                  const numericValue = text.replace(/[^0-9]/g, '');
+                  
+                  if (numericValue === '') {
+                    // If empty, keep current value but allow editing
+                    setAdForm({ ...adForm, slide_duration: 1 });
                     return;
                   }
                   
-                  // Only update if valid number
-                  const duration = parseInt(text, 10);
-                  if (!isNaN(duration)) {
-                    // Clamp value between 1 and 60
-                    const clampedDuration = Math.max(1, Math.min(60, duration));
-                    setAdForm({ ...adForm, slide_duration: clampedDuration });
+                  // Parse and clamp value between 1 and 60
+                  const duration = parseInt(numericValue, 10);
+                  const clampedDuration = Math.max(1, Math.min(60, duration));
+                  setAdForm({ ...adForm, slide_duration: clampedDuration });
+                }}
+                onBlur={() => {
+                  // Ensure minimum value on blur
+                  if (adForm.slide_duration < 1) {
+                    setAdForm({ ...adForm, slide_duration: 1 });
                   }
                 }}
                 placeholder="5"
