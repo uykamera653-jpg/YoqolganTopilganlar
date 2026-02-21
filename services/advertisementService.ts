@@ -41,6 +41,43 @@ export const advertisementService = {
     }
   },
 
+  // Admin: Upload image to storage
+  async uploadImage(imageBase64: string): Promise<{ url: string | null; error: string | null }> {
+    try {
+      const timestamp = Date.now();
+      const fileName = `ad_${timestamp}.jpg`;
+
+      // Convert base64 to blob
+      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+      const { data, error } = await supabase.storage
+        .from('advertisements')
+        .upload(fileName, blob, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+        });
+
+      if (error) {
+        return { url: null, error: error.message };
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('advertisements')
+        .getPublicUrl(data.path);
+
+      return { url: publicUrlData.publicUrl, error: null };
+    } catch (err) {
+      return { url: null, error: (err as Error).message };
+    }
+  },
+
   // Admin: Upload video to storage
   async uploadVideo(videoBase64: string): Promise<{ url: string | null; error: string | null }> {
     try {

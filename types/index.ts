@@ -84,7 +84,7 @@ export interface ReportFormData {
 
 export interface Advertisement {
   id: string;
-  type: 'text' | 'video';
+  type: 'text' | 'image' | 'video';
   title: string;
   content?: string;
   media_url?: string;
@@ -95,7 +95,7 @@ export interface Advertisement {
 }
 
 export interface AdvertisementFormData {
-  type: 'text' | 'video';
+  type: 'text' | 'image' | 'video';
   title: string;
   content?: string;
   media_url?: string;

@@ -178,7 +178,13 @@ export default function HomeScreen() {
             onPress={() => handleAdPress(currentAd.link_url)}
             activeOpacity={0.8}
           >
-            {currentAd.type === 'video' && currentAd.media_url && Video ? (
+            {currentAd.type === 'image' && currentAd.media_url ? (
+              <Image
+                source={{ uri: currentAd.media_url }}
+                style={styles.adImage}
+                contentFit="cover"
+              />
+            ) : currentAd.type === 'video' && currentAd.media_url && Video ? (
               <View style={styles.videoContainer}>
                 <Video
                   source={{ uri: currentAd.media_url }}
@@ -429,6 +435,10 @@ const styles = StyleSheet.create({
   },
   adFooterText: {
     fontSize: typography.sm,
+  },
+  adImage: {
+    width: '100%',
+    height: 250,
   },
   warningCard: {
     marginHorizontal: spacing.md,

@@ -34,7 +34,7 @@ export default function AdminScreen() {
   const [showAdModal, setShowAdModal] = useState(false);
   const [editingAd, setEditingAd] = useState<Advertisement | null>(null);
   const [adForm, setAdForm] = useState({
-    type: 'text' as 'text' | 'video',
+    type: 'text' as 'text' | 'image' | 'video',
     title: '',
     content: '',
     media_url: '',
@@ -198,6 +198,26 @@ export default function AdminScreen() {
     });
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showAlert(t.error, t.errors.uploadError);
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setAdForm({ ...adForm, media_url: `data:image/jpeg;base64,${result.assets[0].base64}` });
+    }
+  };
+
   const pickVideo = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -230,6 +250,17 @@ export default function AdminScreen() {
     setSavingAd(true);
 
     let finalMediaUrl = adForm.media_url;
+
+    // Upload image if it's base64
+    if (adForm.type === 'image' && adForm.media_url && adForm.media_url.startsWith('data:')) {
+      const { url, error } = await advertisementService.uploadImage(adForm.media_url);
+      if (error) {
+        setSavingAd(false);
+        showAlert(t.error, error);
+        return;
+      }
+      finalMediaUrl = url || '';
+    }
 
     // Upload video if it's base64
     if (adForm.type === 'video' && adForm.media_url && adForm.media_url.startsWith('data:')) {
@@ -636,9 +667,9 @@ export default function AdminScreen() {
                     <View style={styles.adCardInfo}>
                       <Text style={[styles.adCardTitle, { color: colors.text }]}>{ad.title}</Text>
                       <View style={styles.adCardMeta}>
-                        <View style={[styles.adTypeBadge, { backgroundColor: ad.type === 'video' ? '#8B5CF6' : '#3B82F6' }]}>
+                        <View style={[styles.adTypeBadge, { backgroundColor: ad.type === 'video' ? '#8B5CF6' : ad.type === 'image' ? '#10B981' : '#3B82F6' }]}>
                           <Text style={styles.adTypeBadgeText}>
-                            {ad.type === 'video' ? t.advertisements.typeVideo : t.advertisements.typeText}
+                            {ad.type === 'video' ? t.advertisements.typeVideo : ad.type === 'image' ? 'Rasm' : t.advertisements.typeText}
                           </Text>
                         </View>
                         <View style={[styles.adStatusBadge, { backgroundColor: ad.is_active ? '#10B981' : '#EF4444' }]}>
@@ -706,11 +737,11 @@ export default function AdminScreen() {
               <View style={styles.typeSelector}>
                 <TouchableOpacity
                   style={[
-                    styles.typeButton,
+                    styles.typeSelectorButton,
                     { backgroundColor: colors.background, borderColor: colors.border },
                     adForm.type === 'text' && { backgroundColor: colors.primary, borderColor: colors.primary }
                   ]}
-                  onPress={() => setAdForm({ ...adForm, type: 'text' })}
+                  onPress={() => setAdForm({ ...adForm, type: 'text', media_url: '' })}
                 >
                   <MaterialIcons name="text-fields" size={20} color={adForm.type === 'text' ? colors.white : colors.text} />
                   <Text style={[styles.typeButtonText, { color: adForm.type === 'text' ? colors.white : colors.text }]}>
@@ -720,11 +751,25 @@ export default function AdminScreen() {
 
                 <TouchableOpacity
                   style={[
-                    styles.typeButton,
+                    styles.typeSelectorButton,
+                    { backgroundColor: colors.background, borderColor: colors.border },
+                    adForm.type === 'image' && { backgroundColor: colors.primary, borderColor: colors.primary }
+                  ]}
+                  onPress={() => setAdForm({ ...adForm, type: 'image', media_url: '' })}
+                >
+                  <MaterialIcons name="image" size={20} color={adForm.type === 'image' ? colors.white : colors.text} />
+                  <Text style={[styles.typeButtonText, { color: adForm.type === 'image' ? colors.white : colors.text }]}>
+                    Rasm
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.typeSelectorButton,
                     { backgroundColor: colors.background, borderColor: colors.border },
                     adForm.type === 'video' && { backgroundColor: colors.primary, borderColor: colors.primary }
                   ]}
-                  onPress={() => setAdForm({ ...adForm, type: 'video' })}
+                  onPress={() => setAdForm({ ...adForm, type: 'video', media_url: '' })}
                 >
                   <MaterialIcons name="videocam" size={20} color={adForm.type === 'video' ? colors.white : colors.text} />
                   <Text style={[styles.typeButtonText, { color: adForm.type === 'video' ? colors.white : colors.text }]}>
@@ -752,6 +797,21 @@ export default function AdminScreen() {
                 multiline
                 numberOfLines={3}
               />
+
+              {adForm.type === 'image' && (
+                <>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>Rasm yuklash</Text>
+                  <TouchableOpacity
+                    style={[styles.uploadButton, { backgroundColor: colors.primary }]}
+                    onPress={pickImage}
+                  >
+                    <MaterialIcons name="upload" size={20} color={colors.white} />
+                    <Text style={styles.uploadButtonText}>
+                      {adForm.media_url ? 'Rasm tanlandi ✓' : 'Rasm yuklash'}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
               {adForm.type === 'video' && (
                 <>
@@ -1159,6 +1219,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   typeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    gap: spacing.xs,
+  },
+  typeSelectorButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
