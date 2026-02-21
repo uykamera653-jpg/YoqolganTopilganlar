@@ -12,9 +12,9 @@ import { spacing, typography } from '@/constants/theme';
 
 function UpdateChecker({ children }: { children: React.ReactNode }) {
   const { showAlert } = useAlert();
-  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    // Check for updates in background (no loading screen)
     checkForUpdates();
   }, []);
 
@@ -23,11 +23,10 @@ function UpdateChecker({ children }: { children: React.ReactNode }) {
       // Skip update check in development
       if (__DEV__ || !Updates.isEnabled) {
         console.log('⚠️ Updates disabled in development mode');
-        setIsChecking(false);
         return;
       }
 
-      console.log('🔍 Checking for updates...');
+      console.log('🔍 Checking for updates in background...');
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
@@ -39,7 +38,6 @@ function UpdateChecker({ children }: { children: React.ReactNode }) {
             {
               text: 'Keyinroq',
               style: 'cancel',
-              onPress: () => setIsChecking(false),
             },
             {
               text: 'Yangilash',
@@ -67,7 +65,6 @@ function UpdateChecker({ children }: { children: React.ReactNode }) {
                     'Xatolik',
                     'Yangilanishda muammo yuz berdi. Keyinroq urinib ko\'ring.'
                   );
-                  setIsChecking(false);
                 }
               },
             },
@@ -75,22 +72,11 @@ function UpdateChecker({ children }: { children: React.ReactNode }) {
         );
       } else {
         console.log('✅ App is up to date');
-        setIsChecking(false);
       }
     } catch (error) {
       console.error('❌ Update check error:', error);
-      setIsChecking(false);
     }
   };
-
-  if (isChecking && !__DEV__) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
-        <Text style={styles.loadingText}>Yangilanishlar tekshirilmoqda...</Text>
-      </View>
-    );
-  }
 
   return <>{children}</>;
 }
@@ -180,17 +166,4 @@ export default function RootLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    gap: spacing.md,
-  },
-  loadingText: {
-    fontSize: typography.base,
-    color: '#6B7280',
-    marginTop: spacing.sm,
-  },
-});
+const styles = StyleSheet.create({});
