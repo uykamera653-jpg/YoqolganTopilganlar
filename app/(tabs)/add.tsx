@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, FlatList } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -32,30 +32,7 @@ export default function AddPostScreen() {
   const [dateOccurred, setDateOccurred] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showRegionSuggestions, setShowRegionSuggestions] = useState(false);
 
-  const regions = [
-    { key: 'tashkent_city', label: t.regions.tashkent_city },
-    { key: 'tashkent', label: t.regions.tashkent },
-    { key: 'andijan', label: t.regions.andijan },
-    { key: 'bukhara', label: t.regions.bukhara },
-    { key: 'fergana', label: t.regions.fergana },
-    { key: 'jizzakh', label: t.regions.jizzakh },
-    { key: 'namangan', label: t.regions.namangan },
-    { key: 'navoi', label: t.regions.navoi },
-    { key: 'kashkadarya', label: t.regions.kashkadarya },
-    { key: 'karakalpakstan', label: t.regions.karakalpakstan },
-    { key: 'samarkand', label: t.regions.samarkand },
-    { key: 'sirdarya', label: t.regions.sirdarya },
-    { key: 'surkhandarya', label: t.regions.surkhandarya },
-    { key: 'khorezm', label: t.regions.khorezm },
-  ];
-
-  const filteredRegions = useMemo(() => {
-    if (!region.trim()) return regions;
-    const searchText = region.toLowerCase();
-    return regions.filter(r => r.label.toLowerCase().includes(searchText));
-  }, [region]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -248,46 +225,13 @@ export default function AddPostScreen() {
           />
 
           <Text style={[styles.label, { color: colors.text }]}>{t.postForm.region}</Text>
-          <View>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-              value={region}
-              onChangeText={(text) => {
-                setRegion(text);
-                setShowRegionSuggestions(text.length > 0);
-              }}
-              onFocus={() => setShowRegionSuggestions(region.length > 0)}
-              onBlur={() => {
-                setTimeout(() => setShowRegionSuggestions(false), 200);
-              }}
-              placeholder={t.postForm.regionPlaceholder}
-              placeholderTextColor={colors.textSecondary}
-            />
-            {showRegionSuggestions && filteredRegions.length > 0 && (
-              <View style={[styles.suggestionsContainer, { backgroundColor: colors.background, borderColor: colors.primary }]}>
-                <FlatList
-                  data={filteredRegions}
-                  keyExtractor={(item) => item.key}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
-                      onPress={() => {
-                        setRegion(item.label);
-                        setShowRegionSuggestions(false);
-                      }}
-                    >
-                      <View style={[styles.suggestionIcon, { backgroundColor: colors.primary + '15' }]}>
-                        <MaterialIcons name="location-city" size={18} color={colors.primary} />
-                      </View>
-                      <Text style={[styles.suggestionText, { color: colors.text }]}>{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                  keyboardShouldPersistTaps="handled"
-                  nestedScrollEnabled
-                />
-              </View>
-            )}
-          </View>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+            value={region}
+            onChangeText={setRegion}
+            placeholder={t.postForm.regionPlaceholder}
+            placeholderTextColor={colors.textSecondary}
+          />
 
           <Text style={[styles.label, { color: colors.text }]}>{t.postForm.location} *</Text>
           <TextInput
@@ -435,41 +379,5 @@ const styles = StyleSheet.create({
     fontSize: typography.lg,
     fontWeight: typography.semibold,
   },
-  suggestionsContainer: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    maxHeight: 200,
-    borderWidth: 3,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: borderRadius.md,
-    borderBottomRightRadius: borderRadius.md,
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 12,
-  },
-  suggestionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    gap: spacing.sm,
-  },
-  suggestionIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  suggestionText: {
-    fontSize: typography.base,
-    fontWeight: typography.medium,
-    flex: 1,
-  },
+
 });
