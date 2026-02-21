@@ -17,7 +17,7 @@ export default function PostsListScreen() {
   const router = useRouter();
   const { filter = 'all', region = '' } = useLocalSearchParams<{ filter: FilterType; region?: string }>();
   const { posts, loading, refreshPosts } = usePosts();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { colors } = useTheme();
   const [showRegionFilter, setShowRegionFilter] = useState(false);
   const [regionSearchText, setRegionSearchText] = useState('');
