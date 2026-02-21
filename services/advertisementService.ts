@@ -47,19 +47,22 @@ export const advertisementService = {
       const timestamp = Date.now();
       const fileName = `ad_${timestamp}.jpg`;
 
-      // Convert base64 to blob
+      // Remove data:image/...;base64, prefix
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      
+      // Decode base64 to binary string
+      const binaryString = atob(base64Data);
+      
+      // Convert binary string to Uint8Array (React Native compatible)
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'image/jpeg' });
 
+      // Upload directly with Uint8Array (no Blob needed)
       const { data, error } = await supabase.storage
         .from('advertisements')
-        .upload(fileName, blob, {
+        .upload(fileName, bytes, {
           contentType: 'image/jpeg',
           cacheControl: '3600',
         });
@@ -84,19 +87,22 @@ export const advertisementService = {
       const timestamp = Date.now();
       const fileName = `ad_${timestamp}.mp4`;
 
-      // Convert base64 to blob
+      // Remove data:video/...;base64, prefix
       const base64Data = videoBase64.replace(/^data:video\/\w+;base64,/, '');
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      
+      // Decode base64 to binary string
+      const binaryString = atob(base64Data);
+      
+      // Convert binary string to Uint8Array (React Native compatible)
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'video/mp4' });
 
+      // Upload directly with Uint8Array (no Blob needed)
       const { data, error } = await supabase.storage
         .from('advertisements')
-        .upload(fileName, blob, {
+        .upload(fileName, bytes, {
           contentType: 'video/mp4',
           cacheControl: '3600',
         });
