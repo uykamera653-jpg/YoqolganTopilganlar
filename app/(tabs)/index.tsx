@@ -268,8 +268,7 @@ export default function HomeScreen() {
                     loop
                     muted
                     playsInline
-                    controls
-                    preload="metadata"
+                    preload="auto"
                     onError={(e) => {
                       console.error('❌ Web video error:', {
                         url: currentAd.media_url,
@@ -280,9 +279,16 @@ export default function HomeScreen() {
                         errorMessage: e.target?.error?.message
                       });
                     }}
-                    onLoadStart={() => console.log('⏳ Video loading started:', currentAd.media_url.substring(0, 80))}
-                    onLoadedData={() => console.log('✅ Web video loaded successfully:', currentAd.media_url.substring(0, 80))}
-                    onCanPlay={() => console.log('▶️ Video ready to play')}
+                    onLoadedData={() => {
+                      console.log('✅ Web video loaded successfully:', currentAd.media_url.substring(0, 80));
+                      // Force play for smooth autoplay
+                      // @ts-ignore
+                      const videoElement = document.querySelector(`video[src="${currentAd.media_url}"]`);
+                      if (videoElement) {
+                        // @ts-ignore
+                        videoElement.play().catch(err => console.log('⚠️ Autoplay prevented:', err));
+                      }
+                    }}
                   />
                 </View>
               ) : videoPlayer ? (
