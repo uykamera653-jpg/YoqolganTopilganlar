@@ -11,7 +11,7 @@ import { advertisementService } from '@/services/advertisementService';
 import { usePosts } from '@/hooks/usePosts';
 import { useRouter } from 'expo-router';
 import { PostCard } from '@/components';
-import { useAlert } from '@/template';
+import { useAlert, useAuth } from '@/template';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Report, Advertisement } from '@/types';
