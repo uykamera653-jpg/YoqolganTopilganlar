@@ -185,6 +185,10 @@ export default {
     postsCount: 'E\'lonlar',
     confirmLogout: 'Chiqishni xohlaysizmi?',
     profileUpdated: 'Profil yangilandi',
+    deleteAccount: 'Profilni o\'chirish',
+    confirmDeleteAccount: 'OGOHLANTIRISH: Profilingiz va barcha ma\'lumotlaringiz (e\'lonlar, xabarlar, kommentariyalar) butunlay o\'chiriladi. Bu amalni bekor qilib bo\'lmaydi!',
+    accountDeleted: 'Profilingiz muvaffaqiyatli o\'chirildi',
+    deleteAccountError: 'Profilni o\'chirishda xatolik yuz berdi',
   },
   
   // User Posts

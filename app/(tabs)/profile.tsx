@@ -60,6 +60,31 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const handleDeleteAccount = async () => {
+    showAlert(t.profile.deleteAccount, t.profile.confirmDeleteAccount, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.delete,
+        style: 'destructive',
+        onPress: async () => {
+          setUpdating(true);
+          const { success, error } = await userService.deleteAccount();
+          setUpdating(false);
+          
+          if (success) {
+            showAlert(t.success, t.profile.accountDeleted);
+            // Wait a moment for user to see the success message
+            setTimeout(() => {
+              router.replace('/login');
+            }, 1500);
+          } else {
+            showAlert(t.error, error || t.profile.deleteAccountError);
+          }
+        },
+      },
+    ]);
+  };
+
   const handleDeletePost = async (postId: string) => {
     showAlert(t.delete, t.postDetail.confirmDelete, [
       { text: t.cancel, style: 'cancel' },
@@ -381,6 +406,23 @@ export default function ProfileScreen() {
             <MaterialIcons name="send" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[styles.deleteAccountButton, { backgroundColor: colors.error }]}
+            onPress={handleDeleteAccount}
+            disabled={updating}
+          >
+            {updating ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <MaterialIcons name="delete-forever" size={24} color="#FFFFFF" />
+                <Text style={styles.deleteAccountButtonText}>{t.profile.deleteAccount}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -634,6 +676,21 @@ const styles = StyleSheet.create({
   },
   themeButtonText: {
     fontSize: 14,
+    fontWeight: '600',
+  },
+  deleteAccountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    marginBottom: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  deleteAccountButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

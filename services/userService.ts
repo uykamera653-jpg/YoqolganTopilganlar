@@ -85,4 +85,34 @@ export const userService = {
       return { success: false, error: 'Rasmni o\'chirishda xatolik' };
     }
   },
+
+  async deleteAccount(): Promise<{ success: boolean; error: string | null }> {
+    try {
+      const { error } = await supabase.functions.invoke('delete-user-account');
+
+      if (error) {
+        console.error('Delete account error:', error);
+        
+        // Check if it's a FunctionsHttpError
+        if (error instanceof Error && 'context' in error) {
+          try {
+            const errorContext = error as any;
+            const statusCode = errorContext.context?.status ?? 500;
+            const textContent = await errorContext.context?.text();
+            const errorMessage = `[Code: ${statusCode}] ${textContent || error.message || 'Unknown error'}`;
+            return { success: false, error: errorMessage };
+          } catch {
+            return { success: false, error: error.message || 'Failed to delete account' };
+          }
+        }
+        
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, error: null };
+    } catch (err) {
+      console.error('Delete account exception:', err);
+      return { success: false, error: (err as Error).message };
+    }
+  },
 };

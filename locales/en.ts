@@ -185,6 +185,10 @@ export default {
     postsCount: 'Posts',
     confirmLogout: 'Do you want to logout?',
     profileUpdated: 'Profile updated',
+    deleteAccount: 'Delete Account',
+    confirmDeleteAccount: 'WARNING: Your profile and all data (posts, messages, comments) will be permanently deleted. This action cannot be undone!',
+    accountDeleted: 'Your account has been successfully deleted',
+    deleteAccountError: 'Failed to delete account',
   },
   
   // User Posts

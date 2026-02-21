@@ -185,6 +185,10 @@ export default {
     postsCount: 'Объявления',
     confirmLogout: 'Вы хотите выйти?',
     profileUpdated: 'Профиль обновлен',
+    deleteAccount: 'Удалить профиль',
+    confirmDeleteAccount: 'ВНИМАНИЕ: Ваш профиль и все данные (объявления, сообщения, комментарии) будут безвозвратно удалены. Это действие нельзя отменить!',
+    accountDeleted: 'Ваш профиль успешно удален',
+    deleteAccountError: 'Не удалось удалить профиль',
   },
   
   // User Posts
