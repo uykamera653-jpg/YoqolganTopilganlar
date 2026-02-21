@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Activity
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Video, VideoView } from 'expo-video';
+import { Video } from 'expo-video';
 import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { CategoryButton } from '@/components';
 import { useAuth, getSupabaseClient } from '@/template';
@@ -222,30 +222,41 @@ export default function HomeScreen() {
                 }}
               />
             ) : currentAd.type === 'video' && currentAd.media_url ? (
-              <View style={styles.videoContainer}>
-                <VideoView
-                  ref={videoRef}
-                  style={styles.video}
-                  player={{
-                    uri: currentAd.media_url,
-                    loop: true,
-                    autoplay: true,
-                    muted: true,
-                  }}
-                  allowsFullscreen={false}
-                  allowsPictureInPicture={false}
-                  nativeControls={false}
-                  contentFit="cover"
-                  onError={(error) => {
-                    console.error('❌ Video error:', error);
-                    console.error('❌ Video URL:', currentAd.media_url);
-                  }}
-                  onLoad={() => {
-                    console.log('✅ Video loaded successfully');
-                    console.log('✅ Video URL:', currentAd.media_url?.substring(0, 80));
-                  }}
-                />
-              </View>
+              Platform.OS === 'web' ? (
+                <View style={styles.videoContainer}>
+                  <video
+                    src={currentAd.media_url}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    onError={() => console.error('❌ Video error:', currentAd.media_url)}
+                    onLoadedData={() => console.log('✅ Video loaded')}
+                  />
+                </View>
+              ) : Video ? (
+                <View style={styles.videoContainer}>
+                  <Video
+                    source={{ uri: currentAd.media_url }}
+                    style={styles.video}
+                    useNativeControls={false}
+                    resizeMode="cover"
+                    isLooping
+                    shouldPlay
+                    isMuted
+                    onError={(error) => console.error('❌ Video error:', error)}
+                    onLoad={() => console.log('✅ Video loaded')}
+                  />
+                </View>
+              ) : (
+                <View style={styles.mediaPlaceholder}>
+                  <MaterialIcons name="videocam" size={48} color={colors.primary} />
+                  <Text style={[styles.adTitle, { color: colors.text }]}>
+                    {currentAd.title}
+                  </Text>
+                </View>
+              )
             ) : (
               <View style={styles.mediaPlaceholder}>
                 <MaterialIcons name="campaign" size={48} color={colors.primary} />
