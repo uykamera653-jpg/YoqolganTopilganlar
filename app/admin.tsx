@@ -226,21 +226,82 @@ export default function AdminScreen() {
   };
 
   const pickVideo = async () => {
+    console.log('📹 Starting video picker...');
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
+      console.log('❌ Permission denied');
       showAlert(t.error, t.errors.uploadError);
       return;
     }
 
+    console.log('✅ Permission granted, launching image library...');
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-      allowsEditing: true,
+      allowsEditing: false, // Editing can cause base64 issues
       quality: 0.8,
       base64: true,
     });
 
-    if (!result.canceled && result.assets[0].base64) {
-      setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${result.assets[0].base64}` });
+    console.log('📦 Picker result:', {
+      canceled: result.canceled,
+      hasAssets: result.assets?.length > 0,
+      hasBase64: !!result.assets?.[0]?.base64,
+      hasUri: !!result.assets?.[0]?.uri,
+      fileSize: result.assets?.[0]?.fileSize,
+    });
+
+    if (result.canceled) {
+      console.log('⚠️ User canceled video selection');
+      return;
+    }
+
+    if (!result.assets || result.assets.length === 0) {
+      console.log('❌ No assets returned');
+      showAlert(t.error, 'Video tanlashda xatolik');
+      return;
+    }
+
+    const video = result.assets[0];
+    console.log('🎬 Video selected:', {
+      uri: video.uri?.substring(0, 50),
+      hasBase64: !!video.base64,
+      width: video.width,
+      height: video.height,
+      duration: video.duration,
+      fileSize: video.fileSize
+    });
+
+    // Check file size (warn if > 10MB)
+    if (video.fileSize && video.fileSize > 10 * 1024 * 1024) {
+      console.warn('⚠️ Large video file:', Math.round(video.fileSize / 1024 / 1024), 'MB');
+      showAlert(
+        'Diqqat',
+        `Video hajmi ${Math.round(video.fileSize / 1024 / 1024)}MB. Yuklash sekin bo'lishi mumkin.`,
+        [
+          { text: 'Bekor qilish', style: 'cancel' },
+          {
+            text: 'Davom etish',
+            onPress: () => {
+              if (video.base64) {
+                console.log('✅ Using base64 from picker');
+                setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${video.base64}` });
+              } else {
+                console.log('❌ Base64 not available from picker');
+                showAlert(t.error, 'Video yuklashda xatolik (base64 mavjud emas)');
+              }
+            }
+          },
+        ]
+      );
+      return;
+    }
+
+    if (video.base64) {
+      console.log('✅ Video base64 received, length:', video.base64.length);
+      setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${video.base64}` });
+    } else {
+      console.error('❌ Base64 not available from picker');
+      showAlert(t.error, 'Video yuklashda xatolik (base64 mavjud emas). Iltimos kichikroq video tanlang.');
     }
   };
 
