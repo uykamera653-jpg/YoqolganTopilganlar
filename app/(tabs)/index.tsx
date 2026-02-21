@@ -271,19 +271,19 @@ export default function HomeScreen() {
                 source={{ uri: currentAd.media_url }}
                 style={styles.adImage}
                 contentFit="cover"
-                cachePolicy="memory-disk"
-                recyclingKey={currentAd.media_url}
+                cachePolicy="disk"
+                recyclingKey={currentAd.id}
                 priority="high"
                 allowDownscaling={false}
                 placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
                 placeholderContentFit="cover"
-                transition={200}
+                transition={0}
                 onError={(error) => {
                   console.error('❌ Image load error:', currentAd.media_url?.substring(0, 80));
                   console.error('Error details:', error);
                 }}
                 onLoadStart={() => console.log('⏳ Image loading started:', currentAd.media_url?.substring(0, 80))}
-                onLoad={() => console.log('✅ Image loaded successfully (from cache or network):', currentAd.media_url?.substring(0, 80))}
+                onLoad={() => console.log('✅ Image loaded successfully (instant from cache):', currentAd.media_url?.substring(0, 80))}
               />
             ) : currentAd.type === 'video' && currentAd.media_url ? (
               Platform.OS === 'web' ? (
