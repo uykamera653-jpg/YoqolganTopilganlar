@@ -263,19 +263,6 @@ export default function PostsListScreen() {
                       )}
                     </View>
                   </View>
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      style={[styles.clearRegionButton, { backgroundColor: colors.textSecondary }]}
-                      onPress={() => {
-                        setActiveRegion('');
-                        setRegionSearchText('');
-                        setShowRegionFilter(false);
-                      }}
-                    >
-                      <MaterialIcons name="clear" size={20} color={staticColors.white} />
-                      <Text style={styles.clearRegionButtonText}>{language === 'uz' ? 'Tozalash' : language === 'ru' ? 'Очистить' : 'Clear'}</Text>
-                    </TouchableOpacity>
-                  </View>
                 </View>
               </TouchableOpacity>
             </KeyboardAvoidingView>
@@ -428,23 +415,6 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: typography.lg,
-    fontWeight: typography.semibold,
-  },
-  modalActions: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.lg,
-  },
-  clearRegionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    gap: spacing.sm,
-  },
-  clearRegionButtonText: {
-    color: staticColors.white,
-    fontSize: typography.base,
     fontWeight: typography.semibold,
   },
 });
