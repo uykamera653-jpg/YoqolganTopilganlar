@@ -19,7 +19,8 @@ import { Report, Advertisement } from '@/types';
 export default function AdminScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAdmin, stats, users, loading, loadStats, loadUsers } = useAdmin();
+  const { user } = useAuth();
+  const { isAdmin, stats, users, loading, loadStats, loadUsers, deletePost: deleteAdminPost } = useAdmin();
   const { posts, refreshPosts } = usePosts();
   const { showAlert } = useAlert();
   const { colors } = useTheme();
@@ -60,12 +61,20 @@ export default function AdminScreen() {
       }
       
       console.log('Admin screen - User IS admin, loading data');
-      loadStats();
-      loadUsers();
-      loadReports();
-      loadAds();
+      loadInitialData();
     }
   }, [isAdmin, loading, checkingAdmin]);
+
+  const loadInitialData = async () => {
+    console.log('Admin - Loading initial data...');
+    await Promise.all([
+      loadStats(),
+      loadUsers(),
+      loadReports(),
+      loadAds(),
+    ]);
+    console.log('Admin - Initial data loaded');
+  };
 
   const loadReports = async () => {
     setReportsLoading(true);
@@ -96,12 +105,12 @@ export default function AdminScreen() {
           style: 'destructive',
           onPress: async () => {
             setDeleting(postId);
-            const { deletePost } = useAdmin();
-            const success = await deletePost(postId);
+            const success = await deleteAdminPost(postId);
             setDeleting(null);
             if (success) {
               showAlert(t.success, t.postDetail.postDeleted);
-              refreshPosts();
+              await refreshPosts();
+              await loadStats();
             } else {
               showAlert(t.error, t.errors.generic);
             }
@@ -415,7 +424,7 @@ export default function AdminScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t.admin.title}</Text>
-        <TouchableOpacity onPress={() => { loadStats(); loadUsers(); refreshPosts(); loadReports(); loadAds(); }}>
+        <TouchableOpacity onPress={() => { loadInitialData(); refreshPosts(); }}>
           <MaterialIcons name="refresh" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>

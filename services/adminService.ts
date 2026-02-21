@@ -13,27 +13,33 @@ export interface AdminStats {
 export const adminService = {
   async getStats(): Promise<{ data: AdminStats | null; error: string | null }> {
     try {
-      const { data: users, error: usersError } = await supabase
+      // Count users
+      const { count: usersCount, error: usersError } = await supabase
         .from('user_profiles')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
       if (usersError) {
+        console.error('Admin stats - users error:', usersError);
         return { data: null, error: usersError.message };
       }
 
+      // Get all posts to count by type
       const { data: posts, error: postsError } = await supabase
         .from('posts')
         .select('type, reward');
 
       if (postsError) {
+        console.error('Admin stats - posts error:', postsError);
         return { data: null, error: postsError.message };
       }
 
-      const totalUsers = users?.length || 0;
+      const totalUsers = usersCount || 0;
       const totalPosts = posts?.length || 0;
       const foundPosts = posts?.filter(p => p.type === 'found').length || 0;
       const lostPosts = posts?.filter(p => p.type === 'lost').length || 0;
-      const rewardPosts = posts?.filter(p => p.reward).length || 0;
+      const rewardPosts = posts?.filter(p => p.reward && p.reward.trim() !== '').length || 0;
+
+      console.log('Admin stats loaded:', { totalUsers, totalPosts, foundPosts, lostPosts, rewardPosts });
 
       return {
         data: {
@@ -46,6 +52,7 @@ export const adminService = {
         error: null,
       };
     } catch (err) {
+      console.error('Admin stats exception:', err);
       return { data: null, error: (err as Error).message };
     }
   },
