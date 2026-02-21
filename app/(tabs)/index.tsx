@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Activity
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Video, ResizeMode } from 'expo-video';
+import { Video } from 'expo-video';
 import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { CategoryButton } from '@/components';
 import { useAuth, getSupabaseClient } from '@/template';
@@ -184,7 +184,7 @@ export default function HomeScreen() {
                   source={{ uri: currentAd.media_url }}
                   style={styles.video}
                   useNativeControls={false}
-                  resizeMode={ResizeMode.CONTAIN}
+                  contentFit="contain"
                   isLooping
                   shouldPlay
                   isMuted
