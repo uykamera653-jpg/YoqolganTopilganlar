@@ -5,14 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMessages } from '@/hooks/useMessages';
-import { useAuth } from '@/template';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { unreadCount } = useMessages();
-  const { user } = useAuth();
 
   return (
     <Tabs
@@ -80,7 +78,6 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          href: user ? '/(tabs)/profile' : null,
           title: t.tabs.profile,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
