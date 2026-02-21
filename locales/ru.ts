@@ -238,6 +238,32 @@ export default {
     passwordUpdated: 'Пароль успешно обновлен!',
   },
 
+  // Advertisements
+  advertisements: {
+    title: 'Реклама',
+    addNew: 'Добавить рекламу',
+    type: 'Тип',
+    typeText: 'Текст',
+    typeVideo: 'Видео',
+    adTitle: 'Заголовок',
+    content: 'Текст',
+    videoUrl: 'URL видео',
+    linkUrl: 'URL ссылки',
+    displayOrder: 'Порядок отображения',
+    isActive: 'Активно',
+    createAd: 'Создать рекламу',
+    editAd: 'Редактировать рекламу',
+    deleteAd: 'Удалить рекламу',
+    confirmDelete: 'Удалить рекламу?',
+    adCreated: 'Реклама создана',
+    adUpdated: 'Реклама обновлена',
+    adDeleted: 'Реклама удалена',
+    noAds: 'Пока нет рекламы',
+    uploadVideo: 'Загрузить видео',
+    videoRequired: 'Необходимо загрузить видео',
+    linkRequired: 'Необходимо указать ссылку',
+  },
+
   // Reports
   reports: {
     title: 'Жалобы',

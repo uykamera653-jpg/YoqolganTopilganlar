@@ -81,3 +81,24 @@ export interface ReportFormData {
   reason: string;
   category: 'inappropriate_content' | 'spam' | 'false_information' | 'harassment' | 'other';
 }
+
+export interface Advertisement {
+  id: string;
+  type: 'text' | 'video';
+  title: string;
+  content?: string;
+  media_url?: string;
+  link_url: string;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+export interface AdvertisementFormData {
+  type: 'text' | 'video';
+  title: string;
+  content?: string;
+  media_url?: string;
+  link_url: string;
+  display_order?: number;
+}

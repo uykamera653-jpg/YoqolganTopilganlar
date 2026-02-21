@@ -1,16 +1,17 @@
-
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { Video, ResizeMode } from 'expo-video';
 import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { CategoryButton } from '@/components';
 import { useAuth, getSupabaseClient } from '@/template';
 import { useRouter } from 'expo-router';
-import { UserProfile } from '@/types';
+import { UserProfile, Advertisement } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { advertisementService } from '@/services/advertisementService';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -20,13 +21,10 @@ export default function HomeScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { t, language } = useLanguage();
   const { colors } = useTheme();
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const slideTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const slides = [
-    t.home.adSlide1,
-    t.home.adSlide2,
-    t.home.adSlide3,
-  ];
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [adsLoading, setAdsLoading] = useState(true);
+  const adTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -34,20 +32,23 @@ export default function HomeScreen() {
     } else {
       setUserProfile(null);
     }
+    loadAdvertisements();
   }, [user]);
 
   useEffect(() => {
-    // Auto-slide every 3 seconds
-    slideTimerRef.current = setInterval(() => {
-      setCurrentSlideIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 3000);
+    if (ads.length > 0) {
+      // Auto-slide every 5 seconds
+      adTimerRef.current = setInterval(() => {
+        setCurrentAdIndex((prevIndex) => (prevIndex + 1) % ads.length);
+      }, 5000);
 
-    return () => {
-      if (slideTimerRef.current) {
-        clearInterval(slideTimerRef.current);
-      }
-    };
-  }, [slides.length]);
+      return () => {
+        if (adTimerRef.current) {
+          clearInterval(adTimerRef.current);
+        }
+      };
+    }
+  }, [ads.length]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -62,6 +63,23 @@ export default function HomeScreen() {
       setUserProfile(data);
     }
   };
+
+  const loadAdvertisements = async () => {
+    setAdsLoading(true);
+    const { data } = await advertisementService.getActiveAds();
+    if (data && data.length > 0) {
+      setAds(data);
+    }
+    setAdsLoading(false);
+  };
+
+  const handleAdPress = (linkUrl: string) => {
+    if (linkUrl) {
+      Linking.openURL(linkUrl).catch(err => console.error('Error opening link:', err));
+    }
+  };
+
+  const currentAd = ads[currentAdIndex];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
@@ -147,31 +165,75 @@ export default function HomeScreen() {
           />
         </View>
 
-        <TouchableOpacity 
-          style={[styles.mediaContainer, { backgroundColor: colors.surface }]}
-          onPress={() => {
-            Linking.openURL('https://t.me/Findosam').catch(err => console.error('Error opening Telegram:', err));
-          }}
-          activeOpacity={0.8}
-        >
-          <View style={styles.mediaPlaceholder}>
-            <MaterialIcons name="campaign" size={48} color={colors.primary} />
-            <Text style={[styles.adSlideText, { color: colors.text }]}>
-              {slides[currentSlideIndex]}
-            </Text>
-            <View style={styles.slideIndicator}>
-              {slides.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.slideIndicatorDot,
-                    { backgroundColor: index === currentSlideIndex ? colors.primary : colors.textTertiary }
-                  ]}
-                />
-              ))}
+        {/* Dynamic Advertisements Section */}
+        {adsLoading ? (
+          <View style={[styles.mediaContainer, { backgroundColor: colors.surface }]}>
+            <View style={styles.mediaPlaceholder}>
+              <ActivityIndicator size="large" color={colors.primary} />
             </View>
           </View>
-          
+        ) : ads.length > 0 && currentAd ? (
+          <TouchableOpacity 
+            style={[styles.mediaContainer, { backgroundColor: colors.surface }]}
+            onPress={() => handleAdPress(currentAd.link_url)}
+            activeOpacity={0.8}
+          >
+            {currentAd.type === 'video' && currentAd.media_url ? (
+              <View style={styles.videoContainer}>
+                <Video
+                  source={{ uri: currentAd.media_url }}
+                  style={styles.video}
+                  useNativeControls={false}
+                  resizeMode={ResizeMode.CONTAIN}
+                  isLooping
+                  shouldPlay
+                  isMuted
+                />
+                <View style={styles.videoOverlay}>
+                  <MaterialIcons name="play-circle-outline" size={64} color="rgba(255,255,255,0.8)" />
+                </View>
+              </View>
+            ) : (
+              <View style={styles.mediaPlaceholder}>
+                <MaterialIcons name="campaign" size={48} color={colors.primary} />
+                <Text style={[styles.adTitle, { color: colors.text }]}>
+                  {currentAd.title}
+                </Text>
+                {currentAd.content && (
+                  <Text style={[styles.adContent, { color: colors.textSecondary }]}>
+                    {currentAd.content}
+                  </Text>
+                )}
+              </View>
+            )}
+            
+            {ads.length > 1 && (
+              <View style={styles.slideIndicator}>
+                {ads.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.slideIndicatorDot,
+                      { backgroundColor: index === currentAdIndex ? colors.primary : colors.textTertiary }
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+
+            <View style={[styles.adFooter, { backgroundColor: colors.background }]}>
+              <MaterialIcons name="touch-app" size={20} color={colors.primary} />
+              <Text style={[styles.adFooterText, { color: colors.textSecondary }]}>
+                {language === 'uz' ? 'Ko\'proq bilish uchun bosing' :
+                 language === 'ru' ? 'Нажмите для подробностей' :
+                 'Tap for more details'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ) : null}
+
+        {/* Warning Banner */}
+        <View style={[styles.warningCard, { backgroundColor: colors.surface }]}>
           <View style={[styles.warningBanner, { backgroundColor: colors.warning + '15', borderColor: colors.warning }]}>
             <MaterialIcons name="warning" size={20} color={colors.warning} />
             <Text style={[styles.warningText, { color: colors.text }]}>
@@ -180,7 +242,7 @@ export default function HomeScreen() {
                'Do not share personal information in posts! Be careful when sharing phone numbers, addresses, and other confidential information.'}
             </Text>
           </View>
-        </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -291,52 +353,86 @@ const styles = StyleSheet.create({
   mediaContainer: {
     marginHorizontal: spacing.md,
     marginTop: spacing.lg,
-    marginBottom: spacing.lg,
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
     ...shadows.md,
   },
   mediaPlaceholder: {
-    height: 200,
+    minHeight: 200,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
   },
-  mediaPlaceholderText: {
-    fontSize: typography.lg,
-    fontWeight: typography.semibold,
-    marginTop: spacing.md,
-    textAlign: 'center',
+  videoContainer: {
+    height: 250,
+    position: 'relative',
+    backgroundColor: '#000000',
   },
-  mediaPlaceholderSubtext: {
-    fontSize: typography.sm,
-    marginTop: spacing.xs,
-    textAlign: 'center',
+  video: {
+    width: '100%',
+    height: '100%',
   },
-  adSlideText: {
-    fontSize: typography.xl,
+  videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.2)',
+  },
+  adTitle: {
+    fontSize: typography.xxl,
     fontWeight: typography.bold,
     marginTop: spacing.md,
     textAlign: 'center',
-    paddingHorizontal: spacing.lg,
-    lineHeight: 28,
+    paddingHorizontal: spacing.md,
+  },
+  adContent: {
+    fontSize: typography.base,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+    lineHeight: 22,
   },
   slideIndicator: {
     flexDirection: 'row',
+    justifyContent: 'center',
     gap: spacing.sm,
-    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
   },
   slideIndicatorDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
+  adFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+  },
+  adFooterText: {
+    fontSize: typography.sm,
+  },
+  warningCard: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
   warningBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    borderTopWidth: 1,
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
     gap: spacing.sm,
   },
   warningText: {

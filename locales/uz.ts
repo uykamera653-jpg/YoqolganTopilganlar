@@ -238,6 +238,32 @@ export default {
     passwordUpdated: 'Parol muvaffaqiyatli yangilandi!',
   },
 
+  // Advertisements
+  advertisements: {
+    title: 'Reklamalar',
+    addNew: 'Yangi reklama',
+    type: 'Turi',
+    typeText: 'Matn',
+    typeVideo: 'Video',
+    adTitle: 'Sarlavha',
+    content: 'Matn',
+    videoUrl: 'Video URL',
+    linkUrl: 'Silka URL',
+    displayOrder: 'Tartib raqami',
+    isActive: 'Faol',
+    createAd: 'Reklama yaratish',
+    editAd: 'Reklamani tahrirlash',
+    deleteAd: 'Reklamani o\'chirish',
+    confirmDelete: 'Reklamani o\'chirishni xohlaysizmi?',
+    adCreated: 'Reklama yaratildi',
+    adUpdated: 'Reklama yangilandi',
+    adDeleted: 'Reklama o\'chirildi',
+    noAds: 'Hozircha reklamalar yo\'q',
+    uploadVideo: 'Video yuklash',
+    videoRequired: 'Video yuklash shart',
+    linkRequired: 'Silka kiritish shart',
+  },
+
   // Reports
   reports: {
     title: 'Shikoyatlar',

@@ -238,6 +238,32 @@ export default {
     passwordUpdated: 'Password successfully updated!',
   },
 
+  // Advertisements
+  advertisements: {
+    title: 'Advertisements',
+    addNew: 'Add New Ad',
+    type: 'Type',
+    typeText: 'Text',
+    typeVideo: 'Video',
+    adTitle: 'Title',
+    content: 'Content',
+    videoUrl: 'Video URL',
+    linkUrl: 'Link URL',
+    displayOrder: 'Display Order',
+    isActive: 'Active',
+    createAd: 'Create Ad',
+    editAd: 'Edit Ad',
+    deleteAd: 'Delete Ad',
+    confirmDelete: 'Delete this ad?',
+    adCreated: 'Ad created',
+    adUpdated: 'Ad updated',
+    adDeleted: 'Ad deleted',
+    noAds: 'No ads yet',
+    uploadVideo: 'Upload Video',
+    videoRequired: 'Video upload required',
+    linkRequired: 'Link is required',
+  },
+
   // Reports
   reports: {
     title: 'Reports',
