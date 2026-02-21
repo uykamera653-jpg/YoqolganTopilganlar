@@ -84,22 +84,29 @@ export const advertisementService = {
   // Admin: Upload video to storage
   async uploadVideo(videoBase64: string): Promise<{ url: string | null; error: string | null }> {
     try {
+      console.log('🎬 Starting video upload...');
+      console.log('📦 Video size (base64):', Math.round(videoBase64.length / 1024), 'KB');
+      
       const timestamp = Date.now();
       const fileName = `ad_${timestamp}.mp4`;
 
       // Remove data:video/...;base64, prefix
       const base64Data = videoBase64.replace(/^data:video\/\w+;base64,/, '');
+      console.log('✂️ Base64 prefix removed, new size:', Math.round(base64Data.length / 1024), 'KB');
       
       // Decode base64 to binary string
       const binaryString = atob(base64Data);
+      console.log('🔓 Base64 decoded to binary, size:', Math.round(binaryString.length / 1024), 'KB');
       
       // Convert binary string to Uint8Array (React Native compatible)
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
+      console.log('📊 Uint8Array created, size:', Math.round(bytes.length / 1024), 'KB');
 
       // Upload directly with Uint8Array (no Blob needed)
+      console.log('⬆️ Uploading to Supabase Storage...');
       const { data, error } = await supabase.storage
         .from('advertisements')
         .upload(fileName, bytes, {
@@ -108,15 +115,19 @@ export const advertisementService = {
         });
 
       if (error) {
+        console.error('❌ Upload error:', error.message);
         return { url: null, error: error.message };
       }
 
+      console.log('✅ Upload successful, path:', data.path);
       const { data: publicUrlData } = supabase.storage
         .from('advertisements')
         .getPublicUrl(data.path);
 
+      console.log('🔗 Public URL:', publicUrlData.publicUrl.substring(0, 80) + '...');
       return { url: publicUrlData.publicUrl, error: null };
     } catch (err) {
+      console.error('❌ Video upload exception:', err);
       return { url: null, error: (err as Error).message };
     }
   },
