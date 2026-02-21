@@ -210,16 +210,10 @@ export default function HomeScreen() {
                 source={{ uri: currentAd.media_url }}
                 style={styles.adImage}
                 contentFit="cover"
-                cachePolicy="none"
-                key={currentAd.media_url}
-                onError={(error) => {
-                  console.error('❌ Image load error:', error);
-                  console.error('❌ Failed URL:', currentAd.media_url);
-                }}
-                onLoad={() => {
-                  console.log('✅ Image loaded successfully');
-                  console.log('✅ Loaded URL:', currentAd.media_url?.substring(0, 80));
-                }}
+                cachePolicy="memory-disk"
+                priority="high"
+                placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+                transition={200}
               />
             ) : currentAd.type === 'video' && currentAd.media_url ? (
               Platform.OS === 'web' ? (
