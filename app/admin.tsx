@@ -287,6 +287,7 @@ export default function AdminScreen() {
 
       setAdForm({ ...adForm, media_url: `data:image/jpeg;base64,${base64Data}` });
       console.log('✅ Image data set successfully');
+      showAlert('Muvaffaqiyat', 'Rasm tanlandi ✓');
     } catch (error) {
       console.error('❌ Error processing image:', error);
       showAlert(t.error, `Rasm yuklashda xatolik: ${(error as Error).message}`);
@@ -386,6 +387,7 @@ export default function AdminScreen() {
 
       setAdForm({ ...adForm, media_url: `data:video/mp4;base64,${base64Data}` });
       console.log('✅ Video data set successfully');
+      showAlert('Muvaffaqiyat', 'Video tanlandi ✓');
     } catch (error) {
       console.error('❌ Error processing video:', error);
       showAlert(t.error, `Video yuklashda xatolik: ${(error as Error).message}`);
@@ -393,12 +395,24 @@ export default function AdminScreen() {
   };
 
   const handleSaveAd = async () => {
+    // Validation
     if (!adForm.title.trim()) {
       showAlert(t.error, t.advertisements.titleRequired);
       return;
     }
     if (!adForm.link_url.trim()) {
       showAlert(t.error, t.advertisements.linkRequired);
+      return;
+    }
+
+    // ⚠️ CRITICAL: Ensure media is uploaded for image/video types
+    if ((adForm.type === 'image' || adForm.type === 'video') && !adForm.media_url) {
+      showAlert(
+        t.error,
+        adForm.type === 'image' 
+          ? 'Iltimos rasm yuklang!'
+          : 'Iltimos video yuklang!'
+      );
       return;
     }
 
@@ -413,11 +427,17 @@ export default function AdminScreen() {
       if (error) {
         console.error('❌ Image upload error:', error);
         setSavingAd(false);
-        showAlert(t.error, error);
+        showAlert(t.error, `Rasm yuklashda xatolik: ${error}`);
         return;
       }
-      finalMediaUrl = url || '';
-      console.log('✅ Image uploaded, URL:', finalMediaUrl?.substring(0, 80));
+      if (!url) {
+        console.error('❌ Upload succeeded but no URL returned');
+        setSavingAd(false);
+        showAlert(t.error, 'Rasm yuklandi lekin URL olinmadi');
+        return;
+      }
+      finalMediaUrl = url;
+      console.log('✅ Image uploaded, URL:', finalMediaUrl.substring(0, 80));
     }
 
     // Upload video if it's base64
@@ -427,14 +447,33 @@ export default function AdminScreen() {
       if (error) {
         console.error('❌ Video upload error:', error);
         setSavingAd(false);
-        showAlert(t.error, error);
+        showAlert(t.error, `Video yuklashda xatolik: ${error}`);
         return;
       }
-      finalMediaUrl = url || '';
-      console.log('✅ Video uploaded, URL:', finalMediaUrl?.substring(0, 80));
+      if (!url) {
+        console.error('❌ Upload succeeded but no URL returned');
+        setSavingAd(false);
+        showAlert(t.error, 'Video yuklandi lekin URL olinmadi');
+        return;
+      }
+      finalMediaUrl = url;
+      console.log('✅ Video uploaded, URL:', finalMediaUrl.substring(0, 80));
     }
 
-    console.log('💾 Saving ad with final media URL:', finalMediaUrl?.substring(0, 80));
+    // ⚠️ Final check: Ensure media_url is not empty for image/video
+    if ((adForm.type === 'image' || adForm.type === 'video') && !finalMediaUrl) {
+      console.error('❌ Final media URL is empty!');
+      setSavingAd(false);
+      showAlert(t.error, 'Media URL yaratilmadi, qaytadan urinib ko\'ring');
+      return;
+    }
+
+    console.log('💾 Saving ad:', {
+      type: adForm.type,
+      title: adForm.title,
+      hasMediaUrl: !!finalMediaUrl,
+      mediaUrlPreview: finalMediaUrl?.substring(0, 80)
+    });
 
     if (editingAd) {
       const { error } = await advertisementService.updateAd(editingAd.id, {
@@ -969,31 +1008,51 @@ export default function AdminScreen() {
 
               {adForm.type === 'image' && (
                 <>
-                  <Text style={[styles.inputLabel, { color: colors.text }]}>Rasm yuklash</Text>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>Rasm yuklash *</Text>
                   <TouchableOpacity
-                    style={[styles.uploadButton, { backgroundColor: colors.primary }]}
+                    style={[
+                      styles.uploadButton,
+                      { backgroundColor: adForm.media_url ? '#10B981' : colors.primary }
+                    ]}
                     onPress={pickImage}
                   >
-                    <MaterialIcons name="upload" size={20} color={colors.white} />
+                    <MaterialIcons 
+                      name={adForm.media_url ? "check-circle" : "upload"} 
+                      size={20} 
+                      color={colors.white} 
+                    />
                     <Text style={styles.uploadButtonText}>
-                      {adForm.media_url ? 'Rasm tanlandi ✓' : 'Rasm yuklash'}
+                      {adForm.media_url ? '✓ Rasm yuklandi' : '📤 Rasm yuklash'}
                     </Text>
                   </TouchableOpacity>
+                  {adForm.media_url && (
+                    <Text style={[styles.helperText, { color: '#10B981' }]}>Rasm muvaffaqiyatli tanlandi</Text>
+                  )}
                 </>
               )}
 
               {adForm.type === 'video' && (
                 <>
-                  <Text style={[styles.inputLabel, { color: colors.text }]}>{t.advertisements.videoUrl}</Text>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>Video yuklash *</Text>
                   <TouchableOpacity
-                    style={[styles.uploadButton, { backgroundColor: colors.primary }]}
+                    style={[
+                      styles.uploadButton,
+                      { backgroundColor: adForm.media_url ? '#10B981' : colors.primary }
+                    ]}
                     onPress={pickVideo}
                   >
-                    <MaterialIcons name="upload" size={20} color={colors.white} />
+                    <MaterialIcons 
+                      name={adForm.media_url ? "check-circle" : "upload"} 
+                      size={20} 
+                      color={colors.white} 
+                    />
                     <Text style={styles.uploadButtonText}>
-                      {adForm.media_url ? t.advertisements.uploadVideo + ' ✓' : t.advertisements.uploadVideo}
+                      {adForm.media_url ? '✓ Video yuklandi' : '📤 Video yuklash'}
                     </Text>
                   </TouchableOpacity>
+                  {adForm.media_url && (
+                    <Text style={[styles.helperText, { color: '#10B981' }]}>Video muvaffaqiyatli tanlandi</Text>
+                  )}
                 </>
               )}
 
