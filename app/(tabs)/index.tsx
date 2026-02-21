@@ -68,10 +68,20 @@ export default function HomeScreen() {
   };
 
   const loadAdvertisements = async () => {
+    console.log('🔄 Loading advertisements...');
     setAdsLoading(true);
-    const { data } = await advertisementService.getActiveAds();
+    const { data, error } = await advertisementService.getActiveAds();
+    console.log('📊 Ads loaded:', { count: data?.length || 0, error });
     if (data && data.length > 0) {
+      console.log('📢 First ad:', {
+        type: data[0].type,
+        title: data[0].title,
+        hasMediaUrl: !!data[0].media_url,
+        mediaUrl: data[0].media_url?.substring(0, 50) + '...'
+      });
       setAds(data);
+    } else {
+      console.log('⚠️ No active ads found');
     }
     setAdsLoading(false);
   };
@@ -83,6 +93,19 @@ export default function HomeScreen() {
   };
 
   const currentAd = ads[currentAdIndex];
+
+  // Debug current ad state
+  useEffect(() => {
+    if (currentAd) {
+      console.log('📺 Current ad:', {
+        index: currentAdIndex,
+        type: currentAd.type,
+        title: currentAd.title,
+        hasMediaUrl: !!currentAd.media_url,
+        mediaUrlPreview: currentAd.media_url?.substring(0, 80)
+      });
+    }
+  }, [currentAdIndex, currentAd]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
@@ -186,6 +209,8 @@ export default function HomeScreen() {
                 source={{ uri: currentAd.media_url }}
                 style={styles.adImage}
                 contentFit="cover"
+                onError={(e) => console.error('❌ Image load error:', e)}
+                onLoad={() => console.log('✅ Image loaded successfully')}
               />
             ) : currentAd.type === 'video' && currentAd.media_url && Video ? (
               <View style={styles.videoContainer}>
@@ -197,6 +222,8 @@ export default function HomeScreen() {
                   isLooping
                   shouldPlay
                   isMuted
+                  onError={(error) => console.error('❌ Video error:', error)}
+                  onLoad={() => console.log('✅ Video loaded')}
                 />
                 <View style={styles.videoOverlay}>
                   <MaterialIcons name="play-circle-outline" size={64} color="rgba(255,255,255,0.8)" />
