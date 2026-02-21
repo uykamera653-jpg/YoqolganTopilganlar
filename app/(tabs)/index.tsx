@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Activity
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Video } from 'expo-video';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { CategoryButton } from '@/components';
 import { useAuth, getSupabaseClient } from '@/template';
@@ -25,7 +25,22 @@ export default function HomeScreen() {
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [adsLoading, setAdsLoading] = useState(true);
   const adTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const videoRef = useRef<any>(null);
+
+  const currentAd = ads[currentAdIndex];
+  
+  // Create video player for mobile platforms
+  const videoPlayer = useVideoPlayer(
+    currentAd?.type === 'video' && currentAd?.media_url && Platform.OS !== 'web' 
+      ? currentAd.media_url
+      : '',
+    (player) => {
+      if (currentAd?.type === 'video' && currentAd?.media_url) {
+        player.loop = true;
+        player.muted = true;
+        player.play();
+      }
+    }
+  );
 
   useEffect(() => {
     if (user) {
@@ -53,6 +68,14 @@ export default function HomeScreen() {
       };
     }
   }, [ads, currentAdIndex]);
+
+  // Replay video when ad changes
+  useEffect(() => {
+    if (currentAd?.type === 'video' && currentAd?.media_url && Platform.OS !== 'web' && videoPlayer) {
+      videoPlayer.replace(currentAd.media_url);
+      videoPlayer.play();
+    }
+  }, [currentAd, videoPlayer]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -92,8 +115,6 @@ export default function HomeScreen() {
       Linking.openURL(linkUrl).catch(err => console.error('Error opening link:', err));
     }
   };
-
-  const currentAd = ads[currentAdIndex];
 
   // Debug current ad state
   useEffect(() => {
@@ -229,26 +250,16 @@ export default function HomeScreen() {
                     onLoadedData={() => console.log('✅ Video loaded')}
                   />
                 </View>
-              ) : Video ? (
-                <View style={styles.videoContainer}>
-                  <Video
-                    source={{ uri: currentAd.media_url }}
-                    style={styles.video}
-                    useNativeControls={false}
-                    resizeMode="cover"
-                    isLooping
-                    shouldPlay
-                    isMuted
-                    onError={(error) => console.error('❌ Video error:', error)}
-                    onLoad={() => console.log('✅ Video loaded')}
-                  />
-                </View>
               ) : (
-                <View style={styles.mediaPlaceholder}>
-                  <MaterialIcons name="videocam" size={48} color={colors.primary} />
-                  <Text style={[styles.adTitle, { color: colors.text }]}>
-                    {currentAd.title}
-                  </Text>
+                <View style={styles.videoContainer}>
+                  <VideoView
+                    player={videoPlayer}
+                    style={styles.video}
+                    nativeControls={false}
+                    contentFit="cover"
+                    allowsFullscreen={false}
+                    allowsPictureInPicture={false}
+                  />
                 </View>
               )
             ) : (
