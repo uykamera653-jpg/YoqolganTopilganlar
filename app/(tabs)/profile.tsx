@@ -19,7 +19,7 @@ type ThemeMode = 'light' | 'dark';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshSession } = useAuth();
   const { posts, deletePost } = usePosts();
   const { showAlert } = useAlert();
   const router = useRouter();
@@ -128,15 +128,14 @@ export default function ProfileScreen() {
 
     const { success, error } = await userService.updateProfile(user.id, username.trim(), newAvatarUrl);
 
-    setUpdating(false);
-
     if (success) {
+      // Refresh AuthContext to update user data
+      await refreshSession();
       setEditMode(false);
+      setUpdating(false);
       showAlert(t.success, t.profile.profileUpdated);
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 500);
     } else {
+      setUpdating(false);
       showAlert(t.error, error || t.errors.generic);
     }
   };
