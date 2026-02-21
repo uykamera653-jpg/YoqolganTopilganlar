@@ -22,8 +22,16 @@ export const advertisementService = {
 
       console.log(`📊 Found ${data?.length || 0} active ads`);
 
-      // Cache media files locally for instant loading (mobile only)
+      // Aggressive caching: Cache all media files for instant loading (mobile only)
       if (data && Platform.OS !== 'web') {
+        // Start caching immediately in background
+        data.forEach(async (ad) => {
+          if (ad.media_url && (ad.type === 'image' || ad.type === 'video')) {
+            this.getCachedMedia(ad.media_url, ad.id);
+          }
+        });
+
+        // Return data with cached URLs
         const cachedAds = await Promise.all(
           data.map(async (ad) => {
             if (ad.media_url && (ad.type === 'image' || ad.type === 'video')) {
@@ -33,7 +41,7 @@ export const advertisementService = {
             return ad;
           })
         );
-        console.log('✅ Ads processed with local cache');
+        console.log('✅ Ads processed with aggressive local cache');
         return { data: cachedAds, error: null };
       }
 

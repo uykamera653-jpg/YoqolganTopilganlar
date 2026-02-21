@@ -29,6 +29,7 @@ export default function HomeScreen() {
   const webVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const currentAd = ads[currentAdIndex];
+  const nextAd = ads[(currentAdIndex + 1) % ads.length];
   
   // Create video player for mobile platforms (always initialize, then update source)
   const videoPlayer = useVideoPlayer('', (player) => {
@@ -73,44 +74,49 @@ export default function HomeScreen() {
     }
   }, [ads, currentAdIndex]);
 
-  // Replay video when ad changes (mobile only)
+  // Preload next ad media for instant transitions
+  useEffect(() => {
+    if (nextAd && Platform.OS !== 'web') {
+      if (nextAd.type === 'image' && nextAd.media_url) {
+        Image.prefetch(nextAd.media_url);
+        console.log('🔄 Preloading next image:', nextAd.title);
+      }
+    }
+  }, [nextAd]);
+
+  // Replay video when ad changes (mobile only) - NO LOADING SPINNER
   useEffect(() => {
     if (currentAd?.type === 'video' && currentAd?.media_url && Platform.OS !== 'web' && videoPlayer) {
       try {
         console.log('📹 [Mobile] Loading video:', currentAd.media_url.substring(0, 80));
-        setVideoLoading(true);
         videoPlayer.replace(currentAd.media_url);
         videoPlayer.muted = true;
         videoPlayer.loop = true;
         
-        // Play after a short delay
+        // Play instantly (no loading state)
         setTimeout(() => {
           videoPlayer.play();
-          setVideoLoading(false);
-        }, 200);
+        }, 100);
       } catch (error) {
         console.error('❌ [Mobile] Video error:', error);
-        setVideoLoading(false);
       }
     }
   }, [currentAd, videoPlayer]);
 
-  // Web video autoplay handler
+  // Web video autoplay handler - NO LOADING SPINNER
   useEffect(() => {
     if (currentAd?.type === 'video' && currentAd?.media_url && Platform.OS === 'web') {
       console.log('🌐 [Web] Preparing video:', currentAd.media_url.substring(0, 80));
-      setVideoLoading(true);
       
-      // Delay to allow video element to mount
+      // Instant play (no loading state)
       setTimeout(() => {
         if (webVideoRef.current) {
           webVideoRef.current.load();
           webVideoRef.current.play().catch(err => {
             console.warn('⚠️ [Web] Autoplay prevented:', err.message);
-            setVideoLoading(false);
           });
         }
-      }, 100);
+      }, 50);
     }
   }, [currentAd]);
 
@@ -272,29 +278,20 @@ export default function HomeScreen() {
                   source={{ uri: currentAd.media_url }}
                   style={styles.adImage}
                   contentFit="cover"
-                  cachePolicy="disk"
+                  cachePolicy="memory-disk"
                   recyclingKey={currentAd.id}
                   priority="high"
                   placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj' }}
                   placeholderContentFit="cover"
-                  transition={200}
+                  transition={150}
                   onError={(error) => {
                     console.error('❌ Image load error:', currentAd.media_url?.substring(0, 80));
-                    console.error('Error details:', error);
                   }}
-                  onLoadStart={() => console.log('⏳ Image loading started:', currentAd.media_url?.substring(0, 80))}
-                  onLoad={() => console.log('✅ Image loaded successfully:', currentAd.media_url?.substring(0, 80))}
                 />
               </View>
             ) : currentAd.type === 'video' && currentAd.media_url ? (
               Platform.OS === 'web' ? (
                 <View style={styles.videoContainer} key={`video-${currentAdIndex}-${currentAd.id}`}>
-                  {videoLoading && (
-                    <View style={styles.videoLoadingOverlay}>
-                      <ActivityIndicator size="large" color={colors.primary} />
-                      <Text style={[styles.loadingText, { color: colors.white }]}>Video yuklanmoqda...</Text>
-                    </View>
-                  )}
                   <video
                     key={currentAd.media_url}
                     ref={(ref) => { 
@@ -320,21 +317,17 @@ export default function HomeScreen() {
                     }}
                     onLoadStart={() => {
                       console.log('⏳ [Web] Video load started:', currentAd.media_url.substring(0, 80));
-                      setVideoLoading(true);
                     }}
                     onCanPlay={() => {
                       console.log('✅ [Web] Video ready to play');
-                      setVideoLoading(false);
                       // Force play
                       if (webVideoRef.current) {
                         webVideoRef.current.play().catch(err => {
                           console.error('⚠️ [Web] Autoplay failed:', err.message);
-                          setVideoLoading(false);
                         });
                       }
                     }}
                     onError={(e) => {
-                      setVideoLoading(false);
                       // @ts-ignore
                       const errorCode = e.target?.error?.code;
                       // @ts-ignore
@@ -354,14 +347,12 @@ export default function HomeScreen() {
                     }}
                     onPlaying={() => {
                       console.log('▶️ [Web] Video is playing');
-                      setVideoLoading(false);
                     }}
                     onWaiting={() => {
                       console.log('⏸️ [Web] Video buffering...');
-                      setVideoLoading(true);
                     }}
                     onProgress={() => {
-                      if (videoLoading) setVideoLoading(false);
+                      // Smooth playback
                     }}
                     onStalled={() => console.warn('⚠️ [Web] Video stalled')}
                     onSuspend={() => console.log('⏸️ [Web] Video suspended')}
@@ -369,12 +360,6 @@ export default function HomeScreen() {
                 </View>
               ) : videoPlayer ? (
                 <View style={styles.videoContainer}>
-                  {videoLoading && (
-                    <View style={styles.videoLoadingOverlay}>
-                      <ActivityIndicator size="large" color={colors.primary} />
-                      <Text style={[styles.loadingText, { color: colors.white }]}>Video yuklanmoqda...</Text>
-                    </View>
-                  )}
                   <VideoView
                     player={videoPlayer}
                     style={styles.video}
@@ -385,7 +370,6 @@ export default function HomeScreen() {
                     onError={(error) => {
                       console.error('❌ [Mobile] VideoView error:', error);
                       console.error('Video URL:', currentAd.media_url?.substring(0, 80));
-                      setVideoLoading(false);
                     }}
                   />
                 </View>
