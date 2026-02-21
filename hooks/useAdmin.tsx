@@ -8,7 +8,7 @@ export function useAdmin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start as true
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -16,12 +16,14 @@ export function useAdmin() {
       console.log('useAdmin: User detected, checking admin status for:', user.email);
       checkAdmin();
     } else {
-      console.log('useAdmin: No user, setting isAdmin to false');
+      console.log('useAdmin: No user, setting isAdmin to false and loading to false');
       setIsAdmin(false);
+      setLoading(false);
     }
   }, [user?.id, user?.email]);
 
   const checkAdmin = async () => {
+    console.log('useAdmin: Starting admin check...');
     setLoading(true);
     const { isAdmin: admin, error } = await adminService.checkIsAdmin();
     if (!error) {
@@ -31,6 +33,7 @@ export function useAdmin() {
       console.error('useAdmin: Admin check failed:', error);
       setIsAdmin(false);
     }
+    console.log('useAdmin: Admin check finished');
     setLoading(false);
   };
 

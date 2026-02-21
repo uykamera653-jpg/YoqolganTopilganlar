@@ -43,15 +43,12 @@ export default function AdminScreen() {
     is_active: true,
   });
   const [savingAd, setSavingAd] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-
   useEffect(() => {
-    console.log('Admin screen - State:', { isAdmin, loading, checkingAdmin, userEmail: user?.email });
+    console.log('Admin screen - State:', { isAdmin, loading, userEmail: user?.email });
     
-    // Wait for initial admin check to complete
-    if (!loading && checkingAdmin) {
-      console.log('Admin screen - Initial check complete');
-      setCheckingAdmin(false);
+    // Wait for admin check to complete
+    if (!loading) {
+      console.log('Admin screen - Loading complete, isAdmin:', isAdmin);
       
       if (!isAdmin) {
         console.log('Admin screen - User is NOT admin, showing error and going back');
@@ -63,7 +60,7 @@ export default function AdminScreen() {
       console.log('Admin screen - User IS admin, loading data');
       loadInitialData();
     }
-  }, [isAdmin, loading, checkingAdmin]);
+  }, [loading, isAdmin]);
 
   const loadInitialData = async () => {
     console.log('Admin - Loading initial data...');
@@ -400,7 +397,7 @@ export default function AdminScreen() {
     );
   };
 
-  if (checkingAdmin || (loading && !stats)) {
+  if (loading && !stats) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
