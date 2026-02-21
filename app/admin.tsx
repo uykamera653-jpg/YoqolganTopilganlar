@@ -42,18 +42,25 @@ export default function AdminScreen() {
     is_active: true,
   });
   const [savingAd, setSavingAd] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
 
   useEffect(() => {
-    if (!isAdmin) {
-      showAlert(t.error, 'Sizda admin huquqlari yo\'q');
-      router.back();
-      return;
+    // Wait for admin check to complete
+    if (!loading && checkingAdmin) {
+      setCheckingAdmin(false);
+      
+      if (!isAdmin) {
+        showAlert(t.error, 'Sizda admin huquqlari yo\'q');
+        router.back();
+        return;
+      }
+      
+      loadStats();
+      loadUsers();
+      loadReports();
+      loadAds();
     }
-    loadStats();
-    loadUsers();
-    loadReports();
-    loadAds();
-  }, [isAdmin]);
+  }, [isAdmin, loading, checkingAdmin]);
 
   const loadReports = async () => {
     setReportsLoading(true);
@@ -379,7 +386,7 @@ export default function AdminScreen() {
     );
   };
 
-  if (loading && !stats) {
+  if (checkingAdmin || (loading && !stats)) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
