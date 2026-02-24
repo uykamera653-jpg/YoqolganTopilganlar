@@ -11,6 +11,26 @@ import { spacing, typography, borderRadius } from '@/constants/theme';
 type Language = 'uz' | 'en' | 'ru';
 type AuthMethod = 'email' | 'phone';
 
+interface Country {
+  code: string;
+  name: string;
+  flag: string;
+  dialCode: string;
+}
+
+const POPULAR_COUNTRIES: Country[] = [
+  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿', dialCode: '+998' },
+  { code: 'RU', name: 'Russia', flag: '🇷🇺', dialCode: '+7' },
+  { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49' },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷', dialCode: '+90' },
+  { code: 'KZ', name: 'Kazakhstan', flag: '🇰🇿', dialCode: '+7' },
+  { code: 'UA', name: 'Ukraine', flag: '🇺🇦', dialCode: '+380' },
+  { code: 'CN', name: 'China', flag: '🇨🇳', dialCode: '+86' },
+  { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91' },
+];
+
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { sendOTP, verifyOTPAndLogin, signInWithPassword, signUpWithPassword, operationLoading } = useAuth();
@@ -24,6 +44,8 @@ export default function LoginScreen() {
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<Country>(POPULAR_COUNTRIES[0]); // Default: Uzbekistan
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
@@ -253,25 +275,71 @@ export default function LoginScreen() {
               editable={!otpSent}
             />
           ) : (
-            <View style={styles.phoneInputContainer}>
-              <View style={[styles.phonePrefix, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.phonePrefixText, { color: colors.text }]}>+998</Text>
+            <>
+              <TouchableOpacity
+                style={[styles.countrySelector, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => setShowCountryPicker(!showCountryPicker)}
+                disabled={otpSent}
+              >
+                <View style={styles.countrySelectorContent}>
+                  <Text style={styles.countryFlag}>{selectedCountry.flag}</Text>
+                  <Text style={[styles.countryName, { color: colors.text }]}>{selectedCountry.name}</Text>
+                  <Text style={[styles.countryCode, { color: colors.textSecondary }]}>({selectedCountry.dialCode})</Text>
+                </View>
+                <MaterialIcons
+                  name={showCountryPicker ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                  size={24}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+
+              {showCountryPicker && (
+                <View style={[styles.countryPickerDropdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <ScrollView style={styles.countryList} nestedScrollEnabled>
+                    {POPULAR_COUNTRIES.map((country) => (
+                      <TouchableOpacity
+                        key={country.code}
+                        style={[
+                          styles.countryOption,
+                          selectedCountry.code === country.code && { backgroundColor: colors.primary + '15' }
+                        ]}
+                        onPress={() => {
+                          setSelectedCountry(country);
+                          setShowCountryPicker(false);
+                          setPhone(''); // Clear phone input when country changes
+                        }}
+                      >
+                        <Text style={styles.countryFlag}>{country.flag}</Text>
+                        <Text style={[styles.countryOptionName, { color: colors.text }]}>{country.name}</Text>
+                        <Text style={[styles.countryOptionCode, { color: colors.textSecondary }]}>{country.dialCode}</Text>
+                        {selectedCountry.code === country.code && (
+                          <MaterialIcons name="check" size={20} color={colors.primary} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              <View style={styles.phoneInputContainer}>
+                <View style={[styles.phonePrefix, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.phonePrefixText, { color: colors.text }]}>{selectedCountry.dialCode}</Text>
+                </View>
+                <TextInput
+                  style={[styles.phoneInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                  value={phone}
+                  onChangeText={(text) => {
+                    // Only allow numbers
+                    const cleaned = text.replace(/\D/g, '');
+                    setPhone(cleaned);
+                  }}
+                  placeholder={selectedCountry.code === 'UZ' ? '90 123 45 67' : 'Phone number'}
+                  placeholderTextColor={colors.textSecondary}
+                  keyboardType="phone-pad"
+                  editable={!otpSent}
+                />
               </View>
-              <TextInput
-                style={[styles.phoneInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-                value={phone}
-                onChangeText={(text) => {
-                  // Only allow numbers and limit to 9 digits
-                  const cleaned = text.replace(/\D/g, '').slice(0, 9);
-                  setPhone(cleaned);
-                }}
-                placeholder="90 123 45 67"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="phone-pad"
-                maxLength={9}
-                editable={!otpSent}
-              />
-            </View>
+            </>
           )}
 
           <TextInput
@@ -579,6 +647,56 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+  },
+  countrySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  countrySelectorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  countryFlag: {
+    fontSize: 24,
+  },
+  countryName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  countryCode: {
+    fontSize: 14,
+  },
+  countryPickerDropdown: {
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 12,
+    maxHeight: 300,
+    overflow: 'hidden',
+  },
+  countryList: {
+    maxHeight: 300,
+  },
+  countryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  countryOptionName: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  countryOptionCode: {
+    fontSize: 14,
   },
   languageSelector: {
     flexDirection: 'row',
