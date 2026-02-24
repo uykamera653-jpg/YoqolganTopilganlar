@@ -203,7 +203,7 @@ export default function LoginScreen() {
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={password}
             onChangeText={setPassword}
-            placeholder={t.auth.password}
+            placeholder={mode === 'register' ? t.auth.newPassword : t.auth.password}
             placeholderTextColor={colors.textSecondary}
             secureTextEntry
             editable={!otpSent || mode === 'login'}
