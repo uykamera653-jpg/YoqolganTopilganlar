@@ -18,7 +18,7 @@ export default {
     register: 'Регистрация',
     logout: 'Выйти',
     email: 'Email',
-    password: 'Пароль',
+    password: 'Новый пароль для FINDO',
     confirmPassword: 'Подтвердите пароль',
     forgotPassword: 'Забыли пароль?',
     dontHaveAccount: 'Нет аккаунта?',

@@ -18,7 +18,7 @@ export default {
     register: 'Ro\'yxatdan o\'tish',
     logout: 'Chiqish',
     email: 'Email',
-    password: 'Parol',
+    password: 'FINDO uchun yangi parol',
     confirmPassword: 'Parolni tasdiqlash',
     forgotPassword: 'Parolni unutdingizmi?',
     dontHaveAccount: 'Hisobingiz yo\'qmi?',
