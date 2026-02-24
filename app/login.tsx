@@ -10,7 +10,6 @@ import { spacing, typography, borderRadius } from '@/constants/theme';
 
 type Language = 'uz' | 'en' | 'ru';
 
-
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { sendOTP, verifyOTPAndLogin, signInWithPassword, signUpWithPassword, operationLoading } = useAuth();
@@ -462,7 +461,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-
   languageSelector: {
     flexDirection: 'row',
     justifyContent: 'center',
