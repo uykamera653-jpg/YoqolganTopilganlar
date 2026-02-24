@@ -9,6 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { spacing, typography, borderRadius } from '@/constants/theme';
 
 type Language = 'uz' | 'en' | 'ru';
+type AuthMethod = 'email' | 'phone';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -20,7 +21,9 @@ export default function LoginScreen() {
   const { colors } = useTheme();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
@@ -28,8 +31,19 @@ export default function LoginScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSendOTP = async () => {
-    if (!email.trim()) {
+    const contact = authMethod === 'email' ? email : phone;
+    if (!contact.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
+      return;
+    }
+
+    if (authMethod === 'phone') {
+      // Phone OTP sending (Firebase Phone Auth)
+      showAlert(
+        'Texnik xizmat',
+        'Telefon autentifikatsiya Firebase orqali sozlanmoqda. Hozircha email orqali ro\'yxatdan o\'ting.',
+        [{ text: 'OK', onPress: () => setAuthMethod('email') }]
+      );
       return;
     }
 
@@ -49,7 +63,8 @@ export default function LoginScreen() {
   };
 
   const handleRegister = async () => {
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+    const contact = authMethod === 'email' ? email : phone;
+    if (!contact.trim() || !password.trim() || !confirmPassword.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
       return;
     }
@@ -98,6 +113,15 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
+    if (authMethod === 'phone') {
+      showAlert(
+        'Texnik xizmat',
+        'Telefon autentifikatsiya Firebase orqali sozlanmoqda. Hozircha email orqali kiring.',
+        [{ text: 'OK', onPress: () => setAuthMethod('email') }]
+      );
+      return;
+    }
+
     if (!email.trim() || !password.trim()) {
       showAlert(t.error, t.errors.fillAllFields);
       return;
@@ -161,6 +185,35 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.form}>
+          <View style={styles.authMethodSelector}>
+            <TouchableOpacity
+              style={[styles.authMethodButton, { backgroundColor: colors.surface, borderColor: colors.border }, authMethod === 'email' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+              onPress={() => {
+                setAuthMethod('email');
+                setOtpSent(false);
+                setOtp('');
+              }}
+            >
+              <MaterialIcons name="email" size={20} color={authMethod === 'email' ? colors.white : colors.textSecondary} />
+              <Text style={[styles.authMethodText, { color: colors.text }, authMethod === 'email' && { color: colors.white }]}>
+                Email
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.authMethodButton, { backgroundColor: colors.surface, borderColor: colors.border }, authMethod === 'phone' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+              onPress={() => {
+                setAuthMethod('phone');
+                setOtpSent(false);
+                setOtp('');
+              }}
+            >
+              <MaterialIcons name="phone" size={20} color={authMethod === 'phone' ? colors.white : colors.textSecondary} />
+              <Text style={[styles.authMethodText, { color: colors.text }, authMethod === 'phone' && { color: colors.white }]}>
+                Telefon
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.modeSelector}>
             <TouchableOpacity
               style={[styles.modeButton, { backgroundColor: colors.surface, borderColor: colors.border }, mode === 'login' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
@@ -188,16 +241,38 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
-            value={email}
-            onChangeText={setEmail}
-            placeholder={t.auth.email}
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            editable={!otpSent}
-          />
+          {authMethod === 'email' ? (
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder={t.auth.email}
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!otpSent}
+            />
+          ) : (
+            <View style={styles.phoneInputContainer}>
+              <View style={[styles.phonePrefix, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.phonePrefixText, { color: colors.text }]}>+998</Text>
+              </View>
+              <TextInput
+                style={[styles.phoneInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+                value={phone}
+                onChangeText={(text) => {
+                  // Only allow numbers and limit to 9 digits
+                  const cleaned = text.replace(/\D/g, '').slice(0, 9);
+                  setPhone(cleaned);
+                }}
+                placeholder="90 123 45 67"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="phone-pad"
+                maxLength={9}
+                editable={!otpSent}
+              />
+            </View>
+          )}
 
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
@@ -460,6 +535,50 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  authMethodSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  authMethodButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 6,
+  },
+  authMethodText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  phonePrefix: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  phonePrefixText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  phoneInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
   },
   languageSelector: {
     flexDirection: 'row',
