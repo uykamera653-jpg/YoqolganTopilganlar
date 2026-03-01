@@ -11,6 +11,7 @@ export default {
   loading: 'Загрузка...',
   error: 'Ошибка',
   success: 'Успешно',
+  loadMore: 'Загрузить еще',
   
   // Auth
   auth: {

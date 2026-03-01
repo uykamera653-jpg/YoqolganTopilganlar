@@ -8,7 +8,7 @@ import { Post } from '@/types';
 import { PostCard } from '@/components';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 type FilterType = 'all' | 'found' | 'lost' | 'reward';
 
@@ -24,6 +24,8 @@ export default function PostsListScreen() {
   const [activeRegion, setActiveRegion] = useState('');
   const [itemSearchText, setItemSearchText] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
+  const [displayLimit, setDisplayLimit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
 
   const regions = [
     { key: '', label: t.regions.all },
@@ -90,7 +92,16 @@ export default function PostsListScreen() {
     return filtered;
   };
 
-  const filteredPosts = getFilteredPosts();
+  const allFilteredPosts = getFilteredPosts();
+  const filteredPosts = allFilteredPosts.slice(0, displayLimit);
+
+  useEffect(() => {
+    setHasMore(allFilteredPosts.length > displayLimit);
+  }, [allFilteredPosts.length, displayLimit]);
+
+  const handleLoadMore = () => {
+    setDisplayLimit(prev => prev + 10);
+  };
 
   const getFilterTitle = () => {
     switch (filter) {
@@ -198,15 +209,30 @@ export default function PostsListScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <FlatList
-            data={filteredPosts}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <PostCard post={item} />}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            onRefresh={refreshPosts}
-            refreshing={loading}
-          />
+          <>
+            <FlatList
+              data={filteredPosts}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <PostCard post={item} />}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              onRefresh={refreshPosts}
+              refreshing={loading}
+            />
+            {hasMore && (
+              <View style={styles.loadMoreContainer}>
+                <TouchableOpacity
+                  style={[styles.loadMoreButton, { backgroundColor: colors.primary }]}
+                  onPress={handleLoadMore}
+                >
+                  <MaterialIcons name="expand-more" size={20} color={staticColors.white} />
+                  <Text style={[styles.loadMoreButtonText, { color: staticColors.white }]}>
+                    {language === 'uz' ? 'Yana yuklash' : language === 'ru' ? 'Загрузить еще' : 'Load More'} ({allFilteredPosts.length - displayLimit})
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
         )}
 
         {showRegionFilter && (
@@ -415,6 +441,23 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: typography.lg,
+    fontWeight: typography.semibold,
+  },
+  loadMoreContainer: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  loadMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    gap: spacing.sm,
+  },
+  loadMoreButtonText: {
+    fontSize: typography.base,
     fontWeight: typography.semibold,
   },
 });

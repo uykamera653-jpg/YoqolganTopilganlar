@@ -11,6 +11,7 @@ export default {
   loading: 'Yuklanmoqda...',
   error: 'Xatolik',
   success: 'Muvaffaqiyatli',
+  loadMore: 'Yana yuklash',
   
   // Auth
   auth: {

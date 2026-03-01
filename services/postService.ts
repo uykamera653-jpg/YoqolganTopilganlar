@@ -4,17 +4,59 @@ import { Post, PostFormData, Comment } from '@/types';
 const supabase = getSupabaseClient();
 
 export const postService = {
-  async fetchPosts(): Promise<{ data: Post[] | null; error: string | null }> {
+  async fetchPosts(limit?: number, offset?: number): Promise<{ data: Post[] | null; error: string | null; hasMore: boolean }> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('posts')
-        .select('*, user_profiles(username, avatar_url)')
+        .select('*, user_profiles(username, avatar_url)', { count: 'exact' })
         .order('created_at', { ascending: false });
 
+      if (limit) {
+        query = query.limit(limit);
+      }
+      if (offset) {
+        query = query.range(offset, offset + (limit || 10) - 1);
+      }
+
+      const { data, error, count } = await query;
+
       if (error) throw error;
-      return { data, error: null };
+      
+      const hasMore = count ? (offset || 0) + (data?.length || 0) < count : false;
+      return { data, error: null, hasMore };
     } catch (error) {
-      return { data: null, error: (error as Error).message };
+      return { data: null, error: (error as Error).message, hasMore: false };
+    }
+  },
+
+  async fetchPostsByType(type: 'found' | 'lost' | 'reward', limit?: number, offset?: number): Promise<{ data: Post[] | null; error: string | null; hasMore: boolean }> {
+    try {
+      let query = supabase
+        .from('posts')
+        .select('*, user_profiles(username, avatar_url)', { count: 'exact' })
+        .order('created_at', { ascending: false });
+
+      if (type === 'reward') {
+        query = query.not('reward', 'is', null);
+      } else {
+        query = query.eq('type', type);
+      }
+
+      if (limit) {
+        query = query.limit(limit);
+      }
+      if (offset) {
+        query = query.range(offset, offset + (limit || 10) - 1);
+      }
+
+      const { data, error, count } = await query;
+
+      if (error) throw error;
+      
+      const hasMore = count ? (offset || 0) + (data?.length || 0) < count : false;
+      return { data, error: null, hasMore };
+    } catch (error) {
+      return { data: null, error: (error as Error).message, hasMore: false };
     }
   },
 

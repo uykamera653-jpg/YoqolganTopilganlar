@@ -11,6 +11,7 @@ export default {
   loading: 'Loading...',
   error: 'Error',
   success: 'Success',
+  loadMore: 'Load More',
   
   // Auth
   auth: {
