@@ -94,9 +94,7 @@ export default function MessagesScreen() {
                 onPress={() => router.push(`/chat?userId=${item.user_id}&username=${item.username}`)}
               >
                 <View style={styles.conversationHeader}>
-                  <TouchableOpacity onPress={() => router.push(`/user-posts?userId=${item.user_id}`)}>
-                    <Text style={[styles.conversationUsername, { color: colors.text }]}>{item.username}</Text>
-                  </TouchableOpacity>
+                  <Text style={[styles.conversationUsername, { color: colors.text }]}>{item.username}</Text>
                   <Text style={[styles.conversationTime, { color: colors.textSecondary }]}>{formatTime(item.last_message_time)}</Text>
                 </View>
                 <Text style={[styles.conversationMessage, { color: colors.textSecondary }]} numberOfLines={1}>
