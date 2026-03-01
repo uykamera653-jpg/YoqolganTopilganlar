@@ -10,7 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { staticColors, spacing } from '@/constants/theme';
@@ -21,6 +21,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { userId, username } = useLocalSearchParams<{ userId: string; username: string }>();
   const { user } = useAuth();
   const { messages, loading, sending, sendMessage } = useMessages(userId);
@@ -65,6 +66,14 @@ export default function ChatScreen() {
           title: username || t.messages.chatWith,
           headerStyle: { backgroundColor: staticColors.primary },
           headerTintColor: staticColors.white,
+          headerRight: () => (
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={() => router.push(`/user-posts?userId=${userId}`)}
+            >
+              <MaterialIcons name="person" size={24} color={staticColors.white} />
+            </TouchableOpacity>
+          ),
         }}
       />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -216,5 +225,9 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  headerButton: {
+    marginRight: spacing.md,
+    padding: spacing.xs,
   },
 });

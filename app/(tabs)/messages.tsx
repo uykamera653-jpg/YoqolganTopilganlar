@@ -73,36 +73,42 @@ export default function MessagesScreen() {
           data={conversations}
           keyExtractor={(item) => item.user_id}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <View
               style={[styles.conversationItem, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-              onPress={() => router.push(`/chat?userId=${item.user_id}&username=${item.username}`)}
             >
-              {item.avatar_url ? (
-                <Image
-                  source={{ uri: item.avatar_url }}
-                  style={[styles.avatarImage, { borderColor: colors.primary + '40' }]}
-                  contentFit="cover"
-                />
-              ) : (
-                <View style={[styles.avatarContainer, { backgroundColor: colors.primary + '20' }]}>
-                  <MaterialIcons name="person" size={32} color={colors.primary} />
-                </View>
-              )}
-              <View style={styles.conversationContent}>
+              <TouchableOpacity onPress={() => router.push(`/user-posts?userId=${item.user_id}`)}>
+                {item.avatar_url ? (
+                  <Image
+                    source={{ uri: item.avatar_url }}
+                    style={[styles.avatarImage, { borderColor: colors.primary + '40' }]}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View style={[styles.avatarContainer, { backgroundColor: colors.primary + '20' }]}>
+                    <MaterialIcons name="person" size={32} color={colors.primary} />
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.conversationContent}
+                onPress={() => router.push(`/chat?userId=${item.user_id}&username=${item.username}`)}
+              >
                 <View style={styles.conversationHeader}>
-                  <Text style={[styles.conversationUsername, { color: colors.text }]}>{item.username}</Text>
+                  <TouchableOpacity onPress={() => router.push(`/user-posts?userId=${item.user_id}`)}>
+                    <Text style={[styles.conversationUsername, { color: colors.text }]}>{item.username}</Text>
+                  </TouchableOpacity>
                   <Text style={[styles.conversationTime, { color: colors.textSecondary }]}>{formatTime(item.last_message_time)}</Text>
                 </View>
                 <Text style={[styles.conversationMessage, { color: colors.textSecondary }]} numberOfLines={1}>
                   {item.last_message}
                 </Text>
-              </View>
+              </TouchableOpacity>
               {item.unread_count > 0 && (
                 <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}>
                   <Text style={styles.unreadBadgeText}>{item.unread_count}</Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </View>
           )}
           contentContainerStyle={styles.listContent}
         />
